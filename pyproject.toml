@@ -1,0 +1,17 @@
+[project]
+name = "ros2_pyterfaces"
+version = "0.1.0"
+description = "Reimplements ROS 2 messages tools (e.g., type hash) and common interfaces"
+requires-python = ">=3.10"
+dependencies = [
+  "cyclonedds_idl",
+  "numpy",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ros2_pyterfaces", "ros2_pyterfaces.*"]
