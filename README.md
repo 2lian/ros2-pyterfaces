@@ -1,6 +1,6 @@
 # ROS 2 PyTerfaces IDL
 
-ROS 2 messages and metadata, but it's Python only. 
+ROS 2 message creation, common interfaces and metadata. Written in python.
 
 Create new message types, (de)serialize messages, compute the rihs01 hash,
 interoperate with ROS 2 and more. ROS 2 `common_interfaces` fully reimplemented and
