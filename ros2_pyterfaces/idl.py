@@ -1,13 +1,24 @@
-import dataclasses
 import hashlib
 from dataclasses import dataclass, fields
-from typing import (Any, Final, Literal, Mapping, Optional, Self, Sequence,
-                    get_args, get_origin, get_type_hints)
+from typing import (
+    Any,
+    Final,
+    Literal,
+    Mapping,
+    Optional,
+    Self,
+    Sequence,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 import cyclonedds_idl as _idl
 
-from .utils.description import (cyclonedds_struct_to_ros_type_description_json,
-                                ros2_type_hash_from_json)
+from .utils.description import (
+    cyclonedds_struct_to_ros_type_description_json,
+    ros2_type_hash_from_json,
+)
 
 types = _idl.types
 
@@ -24,6 +35,7 @@ class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
                 elif get_origin(ann[key]) is Literal:
                     ann.pop(key)
         return super().__new__(mcls, name, bases, namespace, **kwargs)
+
 
 class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
@@ -134,7 +146,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         # Primitive / already compatible
         return value
 
+
 @dataclass
 class DummyEmpty(IdlStruct, typename="does/not/matter/empty"):
     structure_needs_at_least_one_member: types.uint32 = 0
-

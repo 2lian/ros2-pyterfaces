@@ -1,67 +1,66 @@
-# ROS2 PyTerfaces
+# ROS 2 PyTerfaces IDL
 
-```json
-{
-  "type_description": {
-    "type_name": "std_msgs/msg/Empty",
-    "fields": [
-      {
-        "name": "structure_needs_at_least_one_member",
-        "type": {
-          "type_id": 3,
-          "capacity": 0,
-          "string_capacity": 0,
-          "nested_type_name": ""
-        },
-        "default_value": ""
-      }
-    ]
-  },
-  "referenced_type_descriptions": []
-}
-{
-  "type_description": {
-    "type_name": "std_msgs/msg/Empty",
-    "fields": [
-      {
-        "name": "structure_needs_at_least_one_member",
-        "type": {
-          "type_id": 3,
-          "capacity": 0,
-          "string_capacity": 0,
-          "nested_type_name": ""
-        },
-        "default_value": ""
-      }
-    ]
-  },
-  "referenced_type_descriptions": []
-}
+ROS 2 messages and metadata, but it's Python only. 
+
+Create new message types, (de)serialize messages, compute the rihs01 hash,
+interoperate with ROS 2 and more. ROS 2 `common_interfaces` fully reimplemented and
+tested to communicate to/from ROS.
+
+> [!NOTE]
+> This is a low level tool to send/receive raw payload with ROS 2, and to set up communications on the RMW.
+
+## Example
+
+```python
+from ros2_pyterfaces.idl import IdlStruct, types
+
+@dataclass
+class Vector3(IdlStruct, typename="geometry_msgs/msg/Vector3"):
+    x: types.float64 = 0.0
+    y: types.float64 = 0.0
+    z: types.float64 = 0.0
+
+my_msg: Vector3 = Vector3(1,2,3)
+
+# serialization
+blob_bytes: bytes = Vector3.serialize()
+my_msg_again: Vector3 = Vector3.deserialize(blob_bytes)
+
+# ROS 2 metadata
+json_type_description = Vector3.json_type_description()
+hash_rihs01 = Vector3.hash_rihs01()
+
+# ROS 2 mutation
+ros_msg_type = Vector3.to_ros_type()
+ros_msg = Vector3(1,2,3).to_ros()
+our_msg: Vector3 = Vector3.from_ros(ros_msg)
 ```
 
-A plain Python project that reimplements ROS 2 messages tools (notably the type
-hash) and interfaces packages from `common_interfaces`
-using `cyclonedds.idl.IdlStruct` dataclasses.
+> [!WARNING]
+> Not implemented yet:
+> - `IdlStruct.to_ros()`
+> - Services
+> - Actions
 
-## Included packages
+## All ROS 2 `common_interfaces` Included:
 
-- builtin_interfaces
-- diagnostic_msgs
-- geometry_msgs
-- nav_msgs
-- sensor_msgs
-- shape_msgs
-- std_msgs
-- std_srvs
-- stereo_msgs
-- trajectory_msgs
-- visualization_msgs
+- `ros2_pyterfaces.builtin_interfaces`
+- `ros2_pyterfaces.diagnostic_msgs`
+- `ros2_pyterfaces.geometry_msgs`
+- `ros2_pyterfaces.nav_msgs`
+- `ros2_pyterfaces.sensor_msgs`
+- `ros2_pyterfaces.shape_msgs`
+- `ros2_pyterfaces.std_msgs`
+- `ros2_pyterfaces.std_srvs`
+- `ros2_pyterfaces.stereo_msgs`
+- `ros2_pyterfaces.trajectory_msgs`
+- `ros2_pyterfaces.visualization_msgs`
 
 ## Structure
 
-- `src/utils/*.py`: helper utilities, including the ROS 2 type hash
-- `src/<package>/msg.py`: one message per file
-- `src/<package>/srv.py`: one service per file
+- `ros2_pyterfaces.idl`: IDL structure defining messages.
+- `ros2_pyterfaces.<package>.msg`: Messages
+- `ros2_pyterfaces.<package>.srv`: Services
 
 > [!NOTE]
 > Services are represented as `<Name>_Request`, `<Name>_Response`, and a small `<Name>` wrapper exposing `Request` and `Response`.
