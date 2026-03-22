@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import ClassVar, Type
 
 from .. import idl
 from ..service_msgs.msg import ServiceEventInfo
@@ -42,6 +43,8 @@ class GetTypeDescription(
     idl.IdlServiceStruct,
     typename="type_description_interfaces/srv/GetTypeDescription"
 ):
+    Request: ClassVar[Type[GetTypeDescription_Request]] = GetTypeDescription_Request
+    Response: ClassVar[Type[GetTypeDescription_Response]] = GetTypeDescription_Response
     request_message: GetTypeDescription_Request = field(
         default_factory=GetTypeDescription_Request
     )

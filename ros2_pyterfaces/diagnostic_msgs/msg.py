@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import ClassVar, Literal
 
 from ..idl import IdlStruct, types
 from ..std_msgs.msg import Header
@@ -18,10 +18,10 @@ class DiagnosticStatus(IdlStruct, typename="diagnostic_msgs/msg/DiagnosticStatus
     message: str = ""
     hardware_id: str = ""
     values: types.sequence[KeyValue] = field(default_factory=list)
-    OK: Literal[0] = 0
-    WARN: Literal[1] = 1
-    ERROR: Literal[2] = 2
-    STALE: Literal[3] = 3
+    OK: ClassVar[Literal[0]] = 0
+    WARN: ClassVar[Literal[1]] = 1
+    ERROR: ClassVar[Literal[2]] = 2
+    STALE: ClassVar[Literal[3]] = 3
 
 @dataclass
 class DiagnosticArray(IdlStruct, typename="diagnostic_msgs/msg/DiagnosticArray"):

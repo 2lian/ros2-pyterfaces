@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import ClassVar, Literal
 
 import numpy as np
 
@@ -21,20 +21,20 @@ class Plane(IdlStruct, typename="shape_msgs/msg/Plane"):
 
 @dataclass
 class SolidPrimitive(IdlStruct, typename="shape_msgs/msg/SolidPrimitive"):
-    BOX: Literal[1] = 1
-    SPHERE: Literal[2] = 2
-    CYLINDER: Literal[3] = 3
-    CONE: Literal[4] = 4
-    PRISM: Literal[5] = 5
-    BOX_X: Literal[0] = 0
-    BOX_Y: Literal[1] = 1
-    BOX_Z: Literal[2] = 2
-    SPHERE_RADIUS: Literal[0] = 0
-    CYLINDER_HEIGHT: Literal[0] = 0
-    CYLINDER_RADIUS: Literal[1] = 1
-    CONE_HEIGHT: Literal[0] = 0
-    CONE_RADIUS: Literal[1] = 1
-    PRISM_HEIGHT: Literal[0] = 0
+    BOX: ClassVar[Literal[1]] = 1
+    SPHERE: ClassVar[Literal[2]] = 2
+    CYLINDER: ClassVar[Literal[3]] = 3
+    CONE: ClassVar[Literal[4]] = 4
+    PRISM: ClassVar[Literal[5]] = 5
+    BOX_X: ClassVar[Literal[0]] = 0
+    BOX_Y: ClassVar[Literal[1]] = 1
+    BOX_Z: ClassVar[Literal[2]] = 2
+    SPHERE_RADIUS: ClassVar[Literal[0]] = 0
+    CYLINDER_HEIGHT: ClassVar[Literal[0]] = 0
+    CYLINDER_RADIUS: ClassVar[Literal[1]] = 1
+    CONE_HEIGHT: ClassVar[Literal[0]] = 0
+    CONE_RADIUS: ClassVar[Literal[1]] = 1
+    PRISM_HEIGHT: ClassVar[Literal[0]] = 0
     type: types.uint8 = 0
     dimensions: types.sequence[types.float64, 3] = field(default_factory=list)
     polygon: Polygon = field(default_factory=Polygon)

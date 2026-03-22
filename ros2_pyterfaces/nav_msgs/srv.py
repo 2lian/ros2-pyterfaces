@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import ClassVar, Literal, Type
 
 from .. import idl
 from ..geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
@@ -31,6 +31,8 @@ class GetMap(
     idl.IdlServiceStruct,
     typename="nav_msgs/srv/GetMap",
 ):
+    Request: ClassVar[Type[GetMap_Request]] = GetMap_Request
+    Response: ClassVar[Type[GetMap_Response]] = GetMap_Response
     request_message: GetMap_Request = field(default_factory=GetMap_Request)
     response_message: GetMap_Response = field(default_factory=GetMap_Response)
     event_message: GetMap_Event = field(default_factory=GetMap_Event)
@@ -63,6 +65,8 @@ class GetPlan(
     idl.IdlServiceStruct,
     typename="nav_msgs/srv/GetPlan",
 ):
+    Request: ClassVar[Type[GetPlan_Request]] = GetPlan_Request
+    Response: ClassVar[Type[GetPlan_Response]] = GetPlan_Response
     request_message: GetPlan_Request = field(default_factory=GetPlan_Request)
     response_message: GetPlan_Response = field(default_factory=GetPlan_Response)
     event_message: GetPlan_Event = field(default_factory=GetPlan_Event)
@@ -75,11 +79,11 @@ class LoadMap_Request(idl.IdlStruct, typename="nav_msgs/srv/LoadMap_Request"):
 
 @dataclass
 class LoadMap_Response(idl.IdlStruct, typename="nav_msgs/srv/LoadMap_Response"):
-    RESULT_SUCCESS: Literal[0] = 0
-    RESULT_MAP_DOES_NOT_EXIST: Literal[1] = 1
-    RESULT_INVALID_MAP_DATA: Literal[2] = 2
-    RESULT_INVALID_MAP_METADATA: Literal[3] = 3
-    RESULT_UNDEFINED_FAILURE: Literal[255] = 255
+    RESULT_SUCCESS: ClassVar[Literal[0]] = 0
+    RESULT_MAP_DOES_NOT_EXIST: ClassVar[Literal[1]] = 1
+    RESULT_INVALID_MAP_DATA: ClassVar[Literal[2]] = 2
+    RESULT_INVALID_MAP_METADATA: ClassVar[Literal[3]] = 3
+    RESULT_UNDEFINED_FAILURE: ClassVar[Literal[255]] = 255
     map: OccupancyGrid = field(default_factory=OccupancyGrid)
     result: idl.types.uint8 = 0
 
@@ -99,6 +103,8 @@ class LoadMap(
     idl.IdlServiceStruct,
     typename="nav_msgs/srv/LoadMap",
 ):
+    Request: ClassVar[Type[LoadMap_Request]] = LoadMap_Request
+    Response: ClassVar[Type[LoadMap_Response]] = LoadMap_Response
     request_message: LoadMap_Request = field(default_factory=LoadMap_Request)
     response_message: LoadMap_Response = field(default_factory=LoadMap_Response)
     event_message: LoadMap_Event = field(default_factory=LoadMap_Event)
@@ -132,6 +138,8 @@ class SetMap(
     idl.IdlServiceStruct,
     typename="nav_msgs/srv/SetMap",
 ):
+    Request: ClassVar[Type[SetMap_Request]] = SetMap_Request
+    Response: ClassVar[Type[SetMap_Response]] = SetMap_Response
     request_message: SetMap_Request = field(default_factory=SetMap_Request)
     response_message: SetMap_Response = field(default_factory=SetMap_Response)
     event_message: SetMap_Event = field(default_factory=SetMap_Event)

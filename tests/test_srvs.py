@@ -194,6 +194,9 @@ def test_service_wrapper_request_response_links():
     load_map_hints = get_type_hints(LoadMap)
     get_type_description_hints = get_type_hints(GetTypeDescription)
 
+    assert SetBool.Request is SetBool_Request
+    assert SetBool.Response is SetBool_Response
+    assert LoadMap.Response is LoadMap_Response
     assert setbool_hints["request_message"] is SetBool_Request
     assert setbool_hints["response_message"] is SetBool_Response
     assert setbool_hints["event_message"].get_type_name() == "std_srvs/srv/SetBool_Event"
@@ -202,6 +205,8 @@ def test_service_wrapper_request_response_links():
     assert (
         get_type_description_hints["response_message"] is GetTypeDescription_Response
     )
+    assert GetTypeDescription.Request is GetTypeDescription_Request
+    assert GetTypeDescription.Response is GetTypeDescription_Response
 
 
 def test_all_srvs_exposes_event_types():

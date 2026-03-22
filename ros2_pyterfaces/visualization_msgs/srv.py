@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import ClassVar, Type
 
 from .. import idl
 from ..service_msgs.msg import ServiceEventInfo
@@ -38,6 +39,8 @@ class GetInteractiveMarkers(
     idl.IdlServiceStruct,
     typename="visualization_msgs/srv/GetInteractiveMarkers"
 ):
+    Request: ClassVar[Type[GetInteractiveMarkers_Request]] = GetInteractiveMarkers_Request
+    Response: ClassVar[Type[GetInteractiveMarkers_Response]] = GetInteractiveMarkers_Response
     request_message: GetInteractiveMarkers_Request = field(
         default_factory=GetInteractiveMarkers_Request
     )

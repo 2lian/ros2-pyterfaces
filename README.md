@@ -54,10 +54,12 @@ response type.
 
 ```python
 from dataclasses import dataclass, field
+from typing import ClassVar, Type
 
 from ros2_pyterfaces import idl
 from ros2_pyterfaces.service_msgs.msg import ServiceEventInfo
 
+# Same classes definition as Messages for *_Request *_Response
 @dataclass
 class SetBool_Request(idl.IdlStruct, typename="std_srvs/srv/SetBool_Request"):
     data: bool = False
@@ -69,10 +71,17 @@ class SetBool_Response(idl.IdlStruct, typename="std_srvs/srv/SetBool_Response"):
     message: str = ""
 
 # Helper function to create a service class from `*_Request` and `*_Response`
-SetBoolAuto = idl.make_idl_service(SetBool_Request, SetBool_Response)
-set_bool_auto = SetBoolAuto(request_message=SetBool_Request(data=True))
+MySetBool = idl.make_idl_service(SetBool_Request, SetBool_Response)
 
-# Full manual definition
+# get the hash
+ros_hash = MySetBool.hash_rihs01()
+
+# instantiate the request or response objects, or even the service
+some_request: SetBool_Request = MySetBool.Request(data=True)
+some_response : SetBool_Response = MySetBool.Response(success=True, message="yey")
+some_srv = MySetBool(SetBool_Request(data=True), SetBool_Response(success=True))
+
+# Full manual definition, if needed for better static typing
 @dataclass
 class SetBool_Event(
     idl.IdlStruct,
@@ -88,6 +97,8 @@ class SetBool(
     idl.IdlServiceStruct,
     typename="std_srvs/srv/SetBool",
 ):
+    Request: ClassVar[Type[SetBool_Request]] = SetBool_Request
+    Response: ClassVar[Type[SetBool_Response]] = SetBool_Response
     request_message: SetBool_Request = field(default_factory=SetBool_Request)
     response_message: SetBool_Response = field(default_factory=SetBool_Response)
     event_message: SetBool_Event = field(default_factory=SetBool_Event)

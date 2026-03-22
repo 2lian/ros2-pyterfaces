@@ -32,6 +32,8 @@ def test_make_idl_service_builds_expected_service_and_event_types():
     assert idl.is_service_type(generated_type)
     assert generated_type.get_type_name() == "std_srvs/srv/SetBool"
 
+    assert generated_type.Request is SetBool_Request
+    assert generated_type.Response is SetBool_Response
     assert service_hints["request_message"] is SetBool_Request
     assert service_hints["response_message"] is SetBool_Response
     assert issubclass(event_type, idl.IdlStruct)

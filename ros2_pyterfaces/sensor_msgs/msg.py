@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import ClassVar, Literal
 
 import numpy as np
 
@@ -11,29 +11,29 @@ from ..std_msgs.msg import Header
 
 @dataclass
 class BatteryState(IdlStruct, typename="sensor_msgs/msg/BatteryState"):
-    POWER_SUPPLY_STATUS_UNKNOWN: Literal[0] = 0
-    POWER_SUPPLY_STATUS_CHARGING: Literal[1] = 1
-    POWER_SUPPLY_STATUS_DISCHARGING: Literal[2] = 2
-    POWER_SUPPLY_STATUS_NOT_CHARGING: Literal[3] = 3
-    POWER_SUPPLY_STATUS_FULL: Literal[4] = 4
-    POWER_SUPPLY_HEALTH_UNKNOWN: Literal[0] = 0
-    POWER_SUPPLY_HEALTH_GOOD: Literal[1] = 1
-    POWER_SUPPLY_HEALTH_OVERHEAT: Literal[2] = 2
-    POWER_SUPPLY_HEALTH_DEAD: Literal[3] = 3
-    POWER_SUPPLY_HEALTH_OVERVOLTAGE: Literal[4] = 4
-    POWER_SUPPLY_HEALTH_UNSPEC_FAILURE: Literal[5] = 5
-    POWER_SUPPLY_HEALTH_COLD: Literal[6] = 6
-    POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE: Literal[7] = 7
-    POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE: Literal[8] = 8
-    POWER_SUPPLY_TECHNOLOGY_UNKNOWN: Literal[0] = 0
-    POWER_SUPPLY_TECHNOLOGY_NIMH: Literal[1] = 1
-    POWER_SUPPLY_TECHNOLOGY_LION: Literal[2] = 2
-    POWER_SUPPLY_TECHNOLOGY_LIPO: Literal[3] = 3
-    POWER_SUPPLY_TECHNOLOGY_LIFE: Literal[4] = 4
-    POWER_SUPPLY_TECHNOLOGY_NICD: Literal[5] = 5
-    POWER_SUPPLY_TECHNOLOGY_LIMN: Literal[6] = 6
-    POWER_SUPPLY_TECHNOLOGY_TERNARY: Literal[7] = 7
-    POWER_SUPPLY_TECHNOLOGY_VRLA: Literal[8] = 8
+    POWER_SUPPLY_STATUS_UNKNOWN: ClassVar[Literal[0]] = 0
+    POWER_SUPPLY_STATUS_CHARGING: ClassVar[Literal[1]] = 1
+    POWER_SUPPLY_STATUS_DISCHARGING: ClassVar[Literal[2]] = 2
+    POWER_SUPPLY_STATUS_NOT_CHARGING: ClassVar[Literal[3]] = 3
+    POWER_SUPPLY_STATUS_FULL: ClassVar[Literal[4]] = 4
+    POWER_SUPPLY_HEALTH_UNKNOWN: ClassVar[Literal[0]] = 0
+    POWER_SUPPLY_HEALTH_GOOD: ClassVar[Literal[1]] = 1
+    POWER_SUPPLY_HEALTH_OVERHEAT: ClassVar[Literal[2]] = 2
+    POWER_SUPPLY_HEALTH_DEAD: ClassVar[Literal[3]] = 3
+    POWER_SUPPLY_HEALTH_OVERVOLTAGE: ClassVar[Literal[4]] = 4
+    POWER_SUPPLY_HEALTH_UNSPEC_FAILURE: ClassVar[Literal[5]] = 5
+    POWER_SUPPLY_HEALTH_COLD: ClassVar[Literal[6]] = 6
+    POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE: ClassVar[Literal[7]] = 7
+    POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE: ClassVar[Literal[8]] = 8
+    POWER_SUPPLY_TECHNOLOGY_UNKNOWN: ClassVar[Literal[0]] = 0
+    POWER_SUPPLY_TECHNOLOGY_NIMH: ClassVar[Literal[1]] = 1
+    POWER_SUPPLY_TECHNOLOGY_LION: ClassVar[Literal[2]] = 2
+    POWER_SUPPLY_TECHNOLOGY_LIPO: ClassVar[Literal[3]] = 3
+    POWER_SUPPLY_TECHNOLOGY_LIFE: ClassVar[Literal[4]] = 4
+    POWER_SUPPLY_TECHNOLOGY_NICD: ClassVar[Literal[5]] = 5
+    POWER_SUPPLY_TECHNOLOGY_LIMN: ClassVar[Literal[6]] = 6
+    POWER_SUPPLY_TECHNOLOGY_TERNARY: ClassVar[Literal[7]] = 7
+    POWER_SUPPLY_TECHNOLOGY_VRLA: ClassVar[Literal[8]] = 8
     header: Header = field(default_factory=Header)
     voltage: types.float32 = 0.0
     temperature: types.float32 = 0.0
@@ -125,9 +125,9 @@ class Joy(IdlStruct, typename="sensor_msgs/msg/Joy"):
 
 @dataclass
 class JoyFeedback(IdlStruct, typename="sensor_msgs/msg/JoyFeedback"):
-    TYPE_LED: Literal[0] = 0
-    TYPE_RUMBLE: Literal[1] = 1
-    TYPE_BUZZER: Literal[2] = 2
+    TYPE_LED: ClassVar[Literal[0]] = 0
+    TYPE_RUMBLE: ClassVar[Literal[1]] = 1
+    TYPE_BUZZER: ClassVar[Literal[2]] = 2
     type: types.uint8 = 0
     id: types.uint8 = 0
     intensity: types.float32 = 0.0
@@ -172,33 +172,33 @@ class MultiDOFJointState(IdlStruct, typename="sensor_msgs/msg/MultiDOFJointState
 
 @dataclass
 class NavSatStatus(IdlStruct, typename="sensor_msgs/msg/NavSatStatus"):
-    STATUS_UNKNOWN: Literal[-2] = -2
-    STATUS_NO_FIX: Literal[-1] = -1
-    STATUS_FIX: Literal[0] = 0
-    STATUS_SBAS_FIX: Literal[1] = 1
-    STATUS_GBAS_FIX: Literal[2] = 2
-    SERVICE_UNKNOWN: Literal[0] = 0
-    SERVICE_GPS: Literal[1] = 1
-    SERVICE_GLONASS: Literal[2] = 2
-    SERVICE_COMPASS: Literal[4] = 4
-    SERVICE_GALILEO: Literal[8] = 8
+    STATUS_UNKNOWN: ClassVar[Literal[-2]] = -2
+    STATUS_NO_FIX: ClassVar[Literal[-1]] = -1
+    STATUS_FIX: ClassVar[Literal[0]] = 0
+    STATUS_SBAS_FIX: ClassVar[Literal[1]] = 1
+    STATUS_GBAS_FIX: ClassVar[Literal[2]] = 2
+    SERVICE_UNKNOWN: ClassVar[Literal[0]] = 0
+    SERVICE_GPS: ClassVar[Literal[1]] = 1
+    SERVICE_GLONASS: ClassVar[Literal[2]] = 2
+    SERVICE_COMPASS: ClassVar[Literal[4]] = 4
+    SERVICE_GALILEO: ClassVar[Literal[8]] = 8
     status: types.int8 = -2
     service: types.uint16 = 0
 
 
 @dataclass
 class PointField(IdlStruct, typename="sensor_msgs/msg/PointField"):
-    INT8: Literal[1] = 1
-    UINT8: Literal[2] = 2
-    INT16: Literal[3] = 3
-    UINT16: Literal[4] = 4
-    INT32: Literal[5] = 5
-    UINT32: Literal[6] = 6
-    FLOAT32: Literal[7] = 7
-    FLOAT64: Literal[8] = 8
-    INT64: Literal[9] = 9
-    UINT64: Literal[10] = 10
-    BOOL: Literal[11] = 11
+    INT8: ClassVar[Literal[1]] = 1
+    UINT8: ClassVar[Literal[2]] = 2
+    INT16: ClassVar[Literal[3]] = 3
+    UINT16: ClassVar[Literal[4]] = 4
+    INT32: ClassVar[Literal[5]] = 5
+    UINT32: ClassVar[Literal[6]] = 6
+    FLOAT32: ClassVar[Literal[7]] = 7
+    FLOAT64: ClassVar[Literal[8]] = 8
+    INT64: ClassVar[Literal[9]] = 9
+    UINT64: ClassVar[Literal[10]] = 10
+    BOOL: ClassVar[Literal[11]] = 11
     name: str = ""
     offset: types.uint32 = 0
     datatype: types.uint8 = 0
@@ -207,8 +207,8 @@ class PointField(IdlStruct, typename="sensor_msgs/msg/PointField"):
 
 @dataclass
 class Range(IdlStruct, typename="sensor_msgs/msg/Range"):
-    ULTRASOUND: Literal[0] = 0
-    INFRARED: Literal[1] = 1
+    ULTRASOUND: ClassVar[Literal[0]] = 0
+    INFRARED: ClassVar[Literal[1]] = 1
     header: Header = field(default_factory=Header)
     radiation_type: types.uint8 = 0
     field_of_view: types.float32 = 0.0
@@ -284,10 +284,10 @@ class MultiEchoLaserScan(IdlStruct, typename="sensor_msgs/msg/MultiEchoLaserScan
 
 @dataclass
 class NavSatFix(IdlStruct, typename="sensor_msgs/msg/NavSatFix"):
-    COVARIANCE_TYPE_UNKNOWN: Literal[0] = 0
-    COVARIANCE_TYPE_APPROXIMATED: Literal[1] = 1
-    COVARIANCE_TYPE_DIAGONAL_KNOWN: Literal[2] = 2
-    COVARIANCE_TYPE_KNOWN: Literal[3] = 3
+    COVARIANCE_TYPE_UNKNOWN: ClassVar[Literal[0]] = 0
+    COVARIANCE_TYPE_APPROXIMATED: ClassVar[Literal[1]] = 1
+    COVARIANCE_TYPE_DIAGONAL_KNOWN: ClassVar[Literal[2]] = 2
+    COVARIANCE_TYPE_KNOWN: ClassVar[Literal[3]] = 3
     header: Header = field(default_factory=Header)
     status: NavSatStatus = field(default_factory=NavSatStatus)
     latitude: types.float64 = 0.0

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import ClassVar, Literal
 
 from ..builtin_interfaces.msg import Duration
 from ..geometry_msgs.msg import Point, Pose, Quaternion, Vector3
@@ -10,13 +10,13 @@ from ..std_msgs.msg import ColorRGBA, Header
 
 @dataclass
 class ImageMarker(IdlStruct, typename="visualization_msgs/msg/ImageMarker"):
-    CIRCLE: Literal[0] = 0
-    LINE_STRIP: Literal[1] = 1
-    LINE_LIST: Literal[2] = 2
-    POLYGON: Literal[3] = 3
-    POINTS: Literal[4] = 4
-    ADD: Literal[0] = 0
-    REMOVE: Literal[1] = 1
+    CIRCLE: ClassVar[Literal[0]] = 0
+    LINE_STRIP: ClassVar[Literal[1]] = 1
+    LINE_LIST: ClassVar[Literal[2]] = 2
+    POLYGON: ClassVar[Literal[3]] = 3
+    POINTS: ClassVar[Literal[4]] = 4
+    ADD: ClassVar[Literal[0]] = 0
+    REMOVE: ClassVar[Literal[1]] = 1
     header: Header = field(default_factory=Header)
     ns: str = ""
     id: types.int32 = 0
@@ -36,12 +36,12 @@ class ImageMarker(IdlStruct, typename="visualization_msgs/msg/ImageMarker"):
 class InteractiveMarkerFeedback(
     IdlStruct, typename="visualization_msgs/msg/InteractiveMarkerFeedback"
 ):
-    KEEP_ALIVE: Literal[0] = 0
-    POSE_UPDATE: Literal[1] = 1
-    MENU_SELECT: Literal[2] = 2
-    BUTTON_CLICK: Literal[3] = 3
-    MOUSE_DOWN: Literal[4] = 4
-    MOUSE_UP: Literal[5] = 5
+    KEEP_ALIVE: ClassVar[Literal[0]] = 0
+    POSE_UPDATE: ClassVar[Literal[1]] = 1
+    MENU_SELECT: ClassVar[Literal[2]] = 2
+    BUTTON_CLICK: ClassVar[Literal[3]] = 3
+    MOUSE_DOWN: ClassVar[Literal[4]] = 4
+    MOUSE_UP: ClassVar[Literal[5]] = 5
     header: Header = field(default_factory=Header)
     client_id: str = ""
     marker_name: str = ""
@@ -64,9 +64,9 @@ class InteractiveMarkerPose(
 
 @dataclass
 class MenuEntry(IdlStruct, typename="visualization_msgs/msg/MenuEntry"):
-    FEEDBACK: Literal[0] = 0
-    ROSRUN: Literal[1] = 1
-    ROSLAUNCH: Literal[2] = 2
+    FEEDBACK: ClassVar[Literal[0]] = 0
+    ROSRUN: ClassVar[Literal[1]] = 1
+    ROSLAUNCH: ClassVar[Literal[2]] = 2
     id: types.uint32 = 0
     parent_id: types.uint32 = 0
     title: str = ""
@@ -88,23 +88,23 @@ class UVCoordinate(IdlStruct, typename="visualization_msgs/msg/UVCoordinate"):
 
 @dataclass
 class Marker(IdlStruct, typename="visualization_msgs/msg/Marker"):
-    ARROW: Literal[0] = 0
-    CUBE: Literal[1] = 1
-    SPHERE: Literal[2] = 2
-    CYLINDER: Literal[3] = 3
-    LINE_STRIP: Literal[4] = 4
-    LINE_LIST: Literal[5] = 5
-    CUBE_LIST: Literal[6] = 6
-    SPHERE_LIST: Literal[7] = 7
-    POINTS: Literal[8] = 8
-    TEXT_VIEW_FACING: Literal[9] = 9
-    MESH_RESOURCE: Literal[10] = 10
-    TRIANGLE_LIST: Literal[11] = 11
-    ARROW_STRIP: Literal[12] = 12
-    ADD: Literal[0] = 0
-    MODIFY: Literal[0] = 0
-    DELETE: Literal[2] = 2
-    DELETEALL: Literal[3] = 3
+    ARROW: ClassVar[Literal[0]] = 0
+    CUBE: ClassVar[Literal[1]] = 1
+    SPHERE: ClassVar[Literal[2]] = 2
+    CYLINDER: ClassVar[Literal[3]] = 3
+    LINE_STRIP: ClassVar[Literal[4]] = 4
+    LINE_LIST: ClassVar[Literal[5]] = 5
+    CUBE_LIST: ClassVar[Literal[6]] = 6
+    SPHERE_LIST: ClassVar[Literal[7]] = 7
+    POINTS: ClassVar[Literal[8]] = 8
+    TEXT_VIEW_FACING: ClassVar[Literal[9]] = 9
+    MESH_RESOURCE: ClassVar[Literal[10]] = 10
+    TRIANGLE_LIST: ClassVar[Literal[11]] = 11
+    ARROW_STRIP: ClassVar[Literal[12]] = 12
+    ADD: ClassVar[Literal[0]] = 0
+    MODIFY: ClassVar[Literal[0]] = 0
+    DELETE: ClassVar[Literal[2]] = 2
+    DELETEALL: ClassVar[Literal[3]] = 3
     header: Header = field(default_factory=Header)
     ns: str = ""
     id: types.int32 = 0
@@ -130,19 +130,19 @@ class Marker(IdlStruct, typename="visualization_msgs/msg/Marker"):
 class InteractiveMarkerControl(
     IdlStruct, typename="visualization_msgs/msg/InteractiveMarkerControl"
 ):
-    INHERIT: Literal[0] = 0
-    FIXED: Literal[1] = 1
-    VIEW_FACING: Literal[2] = 2
-    NONE: Literal[0] = 0
-    MENU: Literal[1] = 1
-    BUTTON: Literal[2] = 2
-    MOVE_AXIS: Literal[3] = 3
-    MOVE_PLANE: Literal[4] = 4
-    ROTATE_AXIS: Literal[5] = 5
-    MOVE_ROTATE: Literal[6] = 6
-    MOVE_3D: Literal[7] = 7
-    ROTATE_3D: Literal[8] = 8
-    MOVE_ROTATE_3D: Literal[9] = 9
+    INHERIT: ClassVar[Literal[0]] = 0
+    FIXED: ClassVar[Literal[1]] = 1
+    VIEW_FACING: ClassVar[Literal[2]] = 2
+    NONE: ClassVar[Literal[0]] = 0
+    MENU: ClassVar[Literal[1]] = 1
+    BUTTON: ClassVar[Literal[2]] = 2
+    MOVE_AXIS: ClassVar[Literal[3]] = 3
+    MOVE_PLANE: ClassVar[Literal[4]] = 4
+    ROTATE_AXIS: ClassVar[Literal[5]] = 5
+    MOVE_ROTATE: ClassVar[Literal[6]] = 6
+    MOVE_3D: ClassVar[Literal[7]] = 7
+    ROTATE_3D: ClassVar[Literal[8]] = 8
+    MOVE_ROTATE_3D: ClassVar[Literal[9]] = 9
     name: str = ""
     orientation: Quaternion = field(default_factory=Quaternion)
     orientation_mode: types.uint8 = 0
@@ -182,8 +182,8 @@ class InteractiveMarkerInit(
 class InteractiveMarkerUpdate(
     IdlStruct, typename="visualization_msgs/msg/InteractiveMarkerUpdate"
 ):
-    KEEP_ALIVE: Literal[0] = 0
-    UPDATE: Literal[1] = 1
+    KEEP_ALIVE: ClassVar[Literal[0]] = 0
+    UPDATE: ClassVar[Literal[1]] = 1
     server_id: str = ""
     seq_num: types.uint64 = 0
     type: types.uint8 = 0

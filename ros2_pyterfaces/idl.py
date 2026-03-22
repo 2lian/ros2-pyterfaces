@@ -2,6 +2,7 @@ import hashlib
 from dataclasses import dataclass, field, fields
 from typing import (
     Any,
+    ClassVar,
     Final,
     Generic,
     Literal,
@@ -9,6 +10,7 @@ from typing import (
     Optional,
     Self,
     Sequence,
+    Type,
     TypeAlias,
     TypeGuard,
     TypeVar,
@@ -38,9 +40,11 @@ class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
         if ann:
             # remove only from annotations; keep the class attributes themselves
             for key in list(ann):
-                if get_origin(ann[key]) is Final:
+                if get_origin(ann[key]) is ClassVar:
                     ann.pop(key)
                 elif get_origin(ann[key]) is Literal:
+                    ann.pop(key)
+                elif get_origin(ann[key]) is Final:
                     ann.pop(key)
         return super().__new__(mcls, name, bases, namespace, **kwargs)
 
@@ -459,10 +463,14 @@ def make_idl_service(
         "__module__": module_name,
         "__idl_typename__": service_typename,
         "__annotations__": {
+            "Request": ClassVar[Type[request_type]],
+            "Response": ClassVar[Type[response_type]],
             "request_message": request_type,
             "response_message": response_type,
             "event_message": event_type,
         },
+        "Request": request_type,
+        "Response": response_type,
         "request_message": field(default_factory=request_type),
         "response_message": field(default_factory=response_type),
         "event_message": field(default_factory=event_type),
