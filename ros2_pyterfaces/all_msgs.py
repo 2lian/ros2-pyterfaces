@@ -1,4 +1,5 @@
 from .builtin_interfaces.msg import *
+from .service_msgs.msg import *
 from .visualization_msgs.msg import *
 from .trajectory_msgs.msg import *
 from .stereo_msgs.msg import *

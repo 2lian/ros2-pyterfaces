@@ -28,6 +28,7 @@ ros-jazzy-turtlesim = ">=1.8.3,<2"
 debug = "python -m ros2_pyterfaces.idl"
 test = "pytest ./tests"
 router = "RUST_LOG=debug zenohd -c ./tests/router.json5"
+get_type_desc='''ros2 service call /SessionNodede782762_5b06_433f_aba5_e7f483e5ff40/get_type_description type_description_interfaces/srv/GetTypeDescription "{type_name: 'std_srvs/srv/SetBool', type_hash: 'RIHS01_abe9e4bb6b41b40e6789712c00ec8871923e089af3f667a79992a428cff2da0a', include_type_sources: true}"'''
 
 [activation.env]
 RMW_IMPLEMENTATION="rmw_zenoh_cpp"
