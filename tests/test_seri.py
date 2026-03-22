@@ -80,6 +80,14 @@ VALUES = [
 
 
 @pytest.mark.parametrize("my_msg", VALUES)
+def test_deserialize_values(my_msg: idl.IdlStruct):
+    # We cannot compare bit be bit the serialization because of padding
+    ros_msg = my_msg.to_ros()
+    idl_from_ros = my_msg.deserialize(serialize_message(ros_msg))
+    # assert my_msg == my_msg.from_ros(ros_from_idl)
+    assert_strictly_eq(my_msg, idl_from_ros)
+
+@pytest.mark.parametrize("my_msg", VALUES)
 def test_serialize_values(my_msg: idl.IdlStruct):
     # We cannot compare bit be bit the serialization because of padding
     ros_msg_type = my_msg.get_ros_type()

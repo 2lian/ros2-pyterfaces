@@ -37,6 +37,31 @@ class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
         return super().__new__(mcls, name, bases, namespace, **kwargs)
 
 
+class IdlService:
+    __idl_typename__: str = ""
+
+    def __init_subclass__(cls, *, typename: str | None = None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if typename is not None:
+            cls.__idl_typename__ = typename
+
+    @classmethod
+    def get_type_name(cls) -> str:
+        return getattr(cls, "__idl_typename__", "")
+
+    @classmethod
+    def get_ros_type(cls) -> type:
+        from importlib import import_module
+
+        module_name, class_name = cls.get_type_name().replace("/", ".").rsplit(".", 1)
+        mod = import_module(module_name)
+        return getattr(mod, class_name)
+
+    @classmethod
+    def to_ros_type(cls) -> type:
+        return cls.get_ros_type()
+
+
 class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     def serialize(
@@ -86,6 +111,28 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         module_name, class_name = cls.get_type_name().replace("/", ".").rsplit(".", 1)
         mod = import_module(module_name)
         return getattr(mod, class_name)
+
+    @classmethod
+    def to_ros_type(cls) -> type:
+        return cls.get_ros_type()
+
+    def to_ros(self) -> object:
+        """
+        Convert this IdlStruct instance into the matching ROS Python message.
+        """
+        ros_msg = type(self).get_ros_type()()
+        type_hints = get_type_hints(type(self))
+
+        for f in fields(self):
+            if not hasattr(ros_msg, f.name):
+                continue
+
+            src_type = type_hints.get(f.name, f.type)
+            src_value = getattr(self, f.name)
+            dst_value = getattr(ros_msg, f.name)
+            setattr(ros_msg, f.name, self._to_ros_value(src_type, src_value, dst_value))
+
+        return ros_msg
 
     @classmethod
     def from_ros(cls, msg: object) -> Self:
@@ -144,6 +191,46 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
             return int.from_bytes(value)
 
         # Primitive / already compatible
+        return value
+
+    @classmethod
+    def _to_ros_value(cls, src_type: Any, value: Any, dst_value: Any = None) -> Any:
+        if value is None:
+            return None
+
+        if isinstance(value, IdlStruct):
+            return value.to_ros()
+
+        args = get_args(src_type) or getattr(src_type, "__args__", ())
+        if args and isinstance(value, Sequence) and not isinstance(
+            value, (str, bytes, bytearray)
+        ):
+            elem_type = args[0]
+            if isinstance(elem_type, type) and issubclass(elem_type, IdlStruct):
+                return [cls._to_ros_value(elem_type, item) for item in value]
+            return value
+
+        if isinstance(dst_value, bytes):
+            return bytes([int(value)])
+
+        if src_type in (float, types.float32, types.float64):
+            return float(value)
+
+        if src_type in (
+            int,
+            types.byte,
+            types.char,
+            types.int8,
+            types.uint8,
+            types.int16,
+            types.uint16,
+            types.int32,
+            types.uint32,
+            types.int64,
+            types.uint64,
+        ):
+            return int(value)
+
         return value
 
 
