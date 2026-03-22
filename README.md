@@ -38,8 +38,6 @@ our_msg: Vector3 = Vector3.from_ros(ros_msg)
 
 > [!WARNING]
 > Not implemented yet:
-> - `IdlStruct.to_ros()`
-> - Services
 > - Actions
 
 ## All ROS 2 `common_interfaces` Included:
