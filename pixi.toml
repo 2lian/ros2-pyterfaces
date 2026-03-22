@@ -22,16 +22,17 @@ ros-jazzy-common-interfaces = "*"
 ros-jazzy-rmw-cyclonedds-cpp = "*"
 ros-jazzy-rmw-zenoh-cpp = "*"
 zenohd = "*"
+ros-jazzy-turtlesim = ">=1.8.3,<2"
 
 [tasks]
 debug = "python -m ros2_pyterfaces.idl"
 test = "pytest ./tests"
-router = "RUST_LOG=debug zenohd -c ./router.json5"
+router = "RUST_LOG=debug zenohd -c ./tests/router.json5"
 
 [activation.env]
-# RMW_IMPLEMENTATION="rmw_zenoh_cpp"
+RMW_IMPLEMENTATION="rmw_zenoh_cpp"
 # RMW_IMPLEMENTATION="rmw_cyclonedds_cpp"
-RMW_IMPLEMENTATION=""
+# RMW_IMPLEMENTATION=""
 ROS_DOMAIN_ID="0"
 ROS_AUTOMATIC_DISCOVERY_RANGE="LOCALHOST"
 ZENOH_ROUTER_CONFIG_URI="./tests/router.json5"

@@ -66,7 +66,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         )
 
     @classmethod
-    def _hash_rihs01_raw(cls) -> hashlib._hashlib.HASH:
+    def _hash_rihs01_raw(cls) -> "hashlib._Hash":
         """ROS 2 RIHS01 hash"""
         return ros2_type_hash_from_json(cls.json_type_description())
 

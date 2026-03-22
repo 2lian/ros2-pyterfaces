@@ -18,15 +18,15 @@ from ros2_pyterfaces.all_msgs import (
     Empty,
     Float32,
     Float64,
-    Quaternion, KeyValue,
     Header,
     Imu,
     JointState,
     KeyValue,
+    Quaternion,
     String,
+    Time,
     Trajectory,
     TrajectoryPoint,
-    Time,
 )
 
 TYPES: List[Type[idl.IdlStruct]] = sorted(

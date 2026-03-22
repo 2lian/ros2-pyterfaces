@@ -15,7 +15,7 @@ def fixed_array(default_value, length: int):
     return [copy.deepcopy(default_value) for _ in range(length)]
 
 
-def ros2_type_hash_from_json(type_description_json: str) -> hashlib._hashlib.HASH:
+def ros2_type_hash_from_json(type_description_json: str) -> "hashlib._Hash":
     """
     Compute the ROS 2 RIHS01 type hash from a TypeDescription JSON string.
     """
