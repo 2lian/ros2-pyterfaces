@@ -12,12 +12,15 @@ from cyclonedds_idl import IdlStruct, types  # I wanna delete this and depend on
 
 
 def fixed_array(default_value, length: int):
+    """
+    Build a fixed-size list from deep-copied values.
+    """
     return [copy.deepcopy(default_value) for _ in range(length)]
 
 
 def ros2_type_hash_from_json(type_description_json: str) -> "hashlib._Hash":
     """
-    Compute the ROS 2 RIHS01 type hash from a TypeDescription JSON string.
+    Compute the raw RIHS01 hash from type description JSON.
     """
 
     raw = json.loads(type_description_json)
@@ -128,6 +131,22 @@ _CYCLONE_PRIMITIVE_TAG_TO_ROS = {
 }
 
 
+def _placeholder_field() -> dict[str, Any]:
+    """
+    Build the placeholder field used for empty structures.
+    """
+    return {
+        "name": "structure_needs_at_least_one_member",
+        "type": {
+            "type_id": _ROS_SCALAR_TYPE_IDS["uint8"],
+            "capacity": 0,
+            "string_capacity": 0,
+            "nested_type_name": "",
+        },
+        "default_value": "",
+    }
+
+
 def cyclonedds_struct_to_ros_type_description_json(
     cls: type[IdlStruct],
     *,
@@ -136,7 +155,16 @@ def cyclonedds_struct_to_ros_type_description_json(
     indent: int = 2,
 ) -> str:
     """
-    Convert a cyclonedds.idl.IdlStruct subclass into a ROS 2 TypeDescription JSON string.
+    Convert an IDL struct type to ROS 2 type description JSON.
+
+    Args:
+        cls: IDL struct type.
+        root_type_name: Optional root ROS type name.
+        type_name_overrides: Optional nested type name overrides.
+        indent: JSON indentation level.
+
+    Returns:
+        Type description JSON.
     """
     if not isinstance(cls, type) or not issubclass(cls, IdlStruct):
         raise TypeError("cls must be a cyclonedds.idl.IdlStruct subclass")
@@ -314,6 +342,9 @@ def cyclonedds_struct_to_ros_type_description_json(
                 }
             )
 
+        if len(fields) == 0:
+            fields = [_placeholder_field()]
+
         seen[tp_cls] = {
             "type_name": resolve_ros_type_name(tp_cls, is_root=is_root),
             "fields": fields,
@@ -327,20 +358,6 @@ def cyclonedds_struct_to_ros_type_description_json(
     root = seen[cls]
     referenced = [desc for c, desc in seen.items() if c is not cls]
     referenced.sort(key=lambda d: d["type_name"])
-
-    if len(root["fields"]) == 0:
-        root["fields"] = [
-            {
-                "name": "structure_needs_at_least_one_member",
-                "type": {
-                    "type_id": 3,
-                    "capacity": 0,
-                    "string_capacity": 0,
-                    "nested_type_name": "",
-                },
-                "default_value": "",
-            }
-        ]
 
     out = {
         "type_description": root,

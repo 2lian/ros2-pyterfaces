@@ -23,6 +23,7 @@ ros-jazzy-rmw-cyclonedds-cpp = "*"
 ros-jazzy-rmw-zenoh-cpp = "*"
 zenohd = "*"
 ros-jazzy-turtlesim = ">=1.8.3,<2"
+pyright = ">=1.1.408,<2"
 
 [tasks]
 debug = "python -m ros2_pyterfaces.idl"

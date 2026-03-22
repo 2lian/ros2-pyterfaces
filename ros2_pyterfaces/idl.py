@@ -1,13 +1,18 @@
 import hashlib
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import (
     Any,
     Final,
+    Generic,
     Literal,
     Mapping,
     Optional,
     Self,
     Sequence,
+    TypeAlias,
+    TypeGuard,
+    TypeVar,
+    cast,
     get_args,
     get_origin,
     get_type_hints,
@@ -26,6 +31,9 @@ types = _idl.types
 # derive from the same metaclass Cyclone already uses
 class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
     def __new__(mcls, name, bases, namespace, **kwargs):
+        """
+        Create a class while stripping ``Final`` and ``Literal`` field annotations.
+        """
         ann = namespace.get("__annotations__")
         if ann:
             # remove only from annotations; keep the class attributes themselves
@@ -37,31 +45,6 @@ class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
         return super().__new__(mcls, name, bases, namespace, **kwargs)
 
 
-class IdlService:
-    __idl_typename__: str = ""
-
-    def __init_subclass__(cls, *, typename: str | None = None, **kwargs):
-        super().__init_subclass__(**kwargs)
-        if typename is not None:
-            cls.__idl_typename__ = typename
-
-    @classmethod
-    def get_type_name(cls) -> str:
-        return getattr(cls, "__idl_typename__", "")
-
-    @classmethod
-    def get_ros_type(cls) -> type:
-        from importlib import import_module
-
-        module_name, class_name = cls.get_type_name().replace("/", ".").rsplit(".", 1)
-        mod = import_module(module_name)
-        return getattr(mod, class_name)
-
-    @classmethod
-    def to_ros_type(cls) -> type:
-        return cls.get_ros_type()
-
-
 class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     def serialize(
@@ -70,6 +53,17 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         endianness: Optional[_idl.Endianness] = None,
         use_version_2: Optional[bool] = None,
     ) -> bytes:
+        """
+        Serialize this IDL object, using a placeholder for truly empty messages.
+
+        Args:
+            buffer: Optional serialization buffer.
+            endianness: Optional endianness override.
+            use_version_2: Optional XCDR v2 override.
+
+        Returns:
+            Serialized bytes.
+        """
         if len(getattr(type(self), "__annotations__", {})) == 0:
             # ROS 2 cannot send a truly empty message with only a header
             return DummyEmpty().serialize()
@@ -83,6 +77,17 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         type_name_overrides: Mapping[type, str] | None = None,
         indent: int = 2,
     ) -> str:
+        """
+        Build the ROS 2 type description JSON for this class.
+
+        Args:
+            root_type_name: Optional root ROS type name.
+            type_name_overrides: Optional nested type name overrides.
+            indent: JSON indentation level.
+
+        Returns:
+            Type description JSON.
+        """
         return cyclonedds_struct_to_ros_type_description_json(
             cls,
             root_type_name=root_type_name,
@@ -92,20 +97,30 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     @classmethod
     def _hash_rihs01_raw(cls) -> "hashlib._Hash":
-        """ROS 2 RIHS01 hash"""
+        """
+        Compute the raw RIHS01 hash object for this type.
+        """
         return ros2_type_hash_from_json(cls.json_type_description())
 
     @classmethod
     def hash_rihs01(cls) -> str:
-        """ROS 2 RIHS01 hash as string prepended with RIHS01_"""
+        """
+        Compute the RIHS01 hash string for this type.
+        """
         return f"RIHS01_{cls._hash_rihs01_raw().hexdigest()}"
 
     @classmethod
     def get_type_name(cls) -> str:
+        """
+        Return the ROS type name stored on the class.
+        """
         return getattr(cls, "__idl_typename__", "")
 
     @classmethod
     def get_ros_type(cls) -> type:
+        """
+        Resolve the matching ROS Python type.
+        """
         from importlib import import_module
 
         module_name, class_name = cls.get_type_name().replace("/", ".").rsplit(".", 1)
@@ -114,11 +129,14 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     @classmethod
     def to_ros_type(cls) -> type:
+        """
+        Resolve the matching ROS Python type.
+        """
         return cls.get_ros_type()
 
     def to_ros(self) -> object:
         """
-        Convert this IdlStruct instance into the matching ROS Python message.
+        Convert this IDL object to the matching ROS message.
         """
         ros_msg = type(self).get_ros_type()()
         type_hints = get_type_hints(type(self))
@@ -137,7 +155,13 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
     @classmethod
     def from_ros(cls, msg: object) -> Self:
         """
-        Convert a ROS Python message instance into this IdlStruct subclass.
+        Convert a ROS message to this IDL type.
+
+        Args:
+            msg: Matching ROS message instance.
+
+        Returns:
+            Converted IDL instance.
         """
         if isinstance(msg, cls):
             return msg
@@ -169,6 +193,16 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     @classmethod
     def _from_ros_value(cls, dst_type: Any, value: Any) -> Any:
+        """
+        Convert one ROS field value to its IDL-side value.
+
+        Args:
+            dst_type: Target field type.
+            value: ROS field value.
+
+        Returns:
+            Converted Python value.
+        """
         if value is None:
             return None
 
@@ -195,6 +229,17 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     @classmethod
     def _to_ros_value(cls, src_type: Any, value: Any, dst_value: Any = None) -> Any:
+        """
+        Convert one IDL field value to its ROS-side value.
+
+        Args:
+            src_type: Source field type.
+            value: IDL field value.
+            dst_value: Current ROS destination value.
+
+        Returns:
+            Value for the ROS field.
+        """
         if value is None:
             return None
 
@@ -202,8 +247,10 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
             return value.to_ros()
 
         args = get_args(src_type) or getattr(src_type, "__args__", ())
-        if args and isinstance(value, Sequence) and not isinstance(
-            value, (str, bytes, bytearray)
+        if (
+            args
+            and isinstance(value, Sequence)
+            and not isinstance(value, (str, bytes, bytearray))
         ):
             elem_type = args[0]
             if isinstance(elem_type, type) and issubclass(elem_type, IdlStruct):
@@ -236,4 +283,204 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
 @dataclass
 class DummyEmpty(IdlStruct, typename="does/not/matter/empty"):
-    structure_needs_at_least_one_member: types.uint32 = 0
+    structure_needs_at_least_one_member: types.uint8 = 0
+
+
+from .service_msgs.msg import ServiceEventInfo
+
+RequestT = TypeVar("RequestT", bound=IdlStruct)
+ResponseT = TypeVar("ResponseT", bound=IdlStruct)
+
+
+class IdlServiceEventStruct(IdlStruct, Generic[RequestT, ResponseT]):
+    info: ServiceEventInfo
+    request: types.sequence[RequestT, 1]
+    response: types.sequence[ResponseT, 1]
+
+EventT = TypeVar("EventT", bound=IdlServiceEventStruct)
+
+class IdlServiceStruct(IdlStruct, Generic[RequestT, ResponseT, EventT]):
+    request_message: RequestT
+    response_message: ResponseT
+    event_message: EventT
+
+
+AnyIdlServiceEvent: TypeAlias = IdlServiceEventStruct[IdlStruct, IdlStruct]
+AnyIdlService: TypeAlias = IdlServiceStruct[IdlStruct, IdlStruct, AnyIdlServiceEvent]
+
+
+def _service_typename_from_message_types(
+    request_type: type[RequestT], response_type: type[ResponseT]
+) -> str:
+    """
+    Derive the shared service type name from request and response types.
+
+    Args:
+        request_type: Request message type.
+        response_type: Response message type.
+
+    Returns:
+        Shared service type name.
+    """
+    request_typename = request_type.get_type_name()
+    response_typename = response_type.get_type_name()
+
+    if not request_typename.endswith("_Request"):
+        raise ValueError(
+            f"{request_type.__name__} must have a type name ending with '_Request', "
+            f"got {request_typename!r}"
+        )
+    if not response_typename.endswith("_Response"):
+        raise ValueError(
+            f"{response_type.__name__} must have a type name ending with '_Response', "
+            f"got {response_typename!r}"
+        )
+
+    service_typename = request_typename.removesuffix("_Request")
+    expected_response_typename = f"{service_typename}_Response"
+    if response_typename != expected_response_typename:
+        raise ValueError(
+            "Request and response types must share the same service type name, "
+            f"got {request_typename!r} and {response_typename!r}"
+        )
+    return service_typename
+
+
+def _make_service_event_type(
+    *,
+    service_typename: str,
+    module_name: str,
+    request_type: type[RequestT],
+    response_type: type[ResponseT],
+) -> type[IdlServiceEventStruct[RequestT, ResponseT]]:
+    """
+    Create the generated ``_Event`` type for a service.
+
+    Args:
+        service_typename: ROS service type name.
+        module_name: Python module name.
+        request_type: Request message type.
+        response_type: Response message type.
+
+    Returns:
+        Generated event type.
+    """
+    service_name = service_typename.rsplit("/", 1)[1]
+    event_name = f"{service_name}_Event"
+    event_typename = f"{service_typename}_Event"
+    event_namespace = {
+        "__module__": module_name,
+        "__idl_typename__": event_typename,
+        "__annotations__": {
+            "info": ServiceEventInfo,
+            "request": types.sequence[request_type, 1],
+            "response": types.sequence[response_type, 1],
+        },
+        "info": field(default_factory=ServiceEventInfo),
+        "request": field(default_factory=list),
+        "response": field(default_factory=list),
+    }
+    event_type = cast(
+        type[IdlServiceEventStruct[RequestT, ResponseT]],
+        dataclass(
+            IdlMetaIgnoreFinal(
+                event_name,
+                (IdlServiceEventStruct,),
+                event_namespace,
+                typename=event_typename,
+            )
+        ),
+    )
+    event_type.__idl_typename__ = event_typename
+    return event_type
+
+
+SERVICE_FIELD_NAMES: Final[frozenset[str]] = frozenset(
+    {"request_message", "response_message", "event_message"}
+)
+
+
+def is_service_type(obj: Any) -> TypeGuard[type[AnyIdlService]]:
+    """
+    Check whether an object looks like an IDL service type.
+    """
+    if not isinstance(obj, type):
+        return False
+    try:
+        if not issubclass(obj, IdlStruct):
+            return False
+    except TypeError:
+        return False
+
+    dataclass_fields = getattr(obj, "__dataclass_fields__", {})
+    return SERVICE_FIELD_NAMES.issubset(dataclass_fields)
+
+
+def make_idl_service(
+    request_type: type[RequestT],
+    response_type: type[ResponseT],
+    *,
+    _module_name: str | None = None,
+) -> type[
+    IdlServiceStruct[
+        RequestT, ResponseT, IdlServiceEventStruct[RequestT, ResponseT]
+    ]
+]:
+    """
+    Generate an IDL service type from request and response message types.
+
+    Args:
+        request_type: Request message type.
+        response_type: Response message type.
+        _module_name: Optional Python module name.
+
+    Returns:
+        Generated service type.
+    """
+    if not issubclass(request_type, IdlStruct):
+        raise TypeError(
+            f"request_type must inherit from IdlStruct, got {request_type!r}"
+        )
+    if not issubclass(response_type, IdlStruct):
+        raise TypeError(
+            f"response_type must inherit from IdlStruct, got {response_type!r}"
+        )
+
+    service_typename = _service_typename_from_message_types(request_type, response_type)
+    service_name = service_typename.rsplit("/", 1)[1]
+    module_name = _module_name or request_type.__module__
+    event_type = _make_service_event_type(
+        service_typename=service_typename,
+        module_name=module_name,
+        request_type=request_type,
+        response_type=response_type,
+    )
+    service_namespace = {
+        "__module__": module_name,
+        "__idl_typename__": service_typename,
+        "__annotations__": {
+            "request_message": request_type,
+            "response_message": response_type,
+            "event_message": event_type,
+        },
+        "request_message": field(default_factory=request_type),
+        "response_message": field(default_factory=response_type),
+        "event_message": field(default_factory=event_type),
+    }
+    service_type = cast(
+        type[
+            IdlServiceStruct[
+                RequestT, ResponseT, IdlServiceEventStruct[RequestT, ResponseT]
+            ]
+        ],
+        dataclass(
+            IdlMetaIgnoreFinal(
+                service_name,
+                (IdlServiceStruct,),
+                service_namespace,
+                typename=service_typename,
+            )
+        ),
+    )
+    service_type.__idl_typename__ = service_typename
+    return service_type

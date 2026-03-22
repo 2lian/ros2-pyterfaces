@@ -1,51 +1,34 @@
-import inspect
-import json
-import subprocess
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
-from pprint import pprint
-from typing import Dict, List, Tuple, Type
+from typing import Tuple, Type, get_type_hints
 
 import asyncio_for_robotics.ros2 as afor
 import pytest
 import rclpy
-import rclpy._rclpy_pybind11 as _impl
-from std_srvs.srv import SetBool as RosSetBool
 
 from ros2_pyterfaces import all_msgs, all_srvs, idl
-from ros2_pyterfaces.all_srvs import SetBool_Request, SetBool_Response, Trigger
+from ros2_pyterfaces.all_srvs import SetBool, SetBool_Request, SetBool_Response, Trigger
+from ros2_pyterfaces.sensor_msgs.srv import SetCameraInfo
 
-
-@dataclass
-class SetBool_Event(idl.IdlStruct, typename="std_srvs/srv/SetBool_Event"):
-    info: all_msgs.ServiceEventInfo = field(default_factory=all_msgs.ServiceEventInfo)
-    request: idl.types.sequence[SetBool_Request, 1] = field(default_factory=list)
-    response: idl.types.sequence[SetBool_Response, 1] = field(default_factory=list)
-
-
-@dataclass
-class SetBool(idl.IdlStruct, typename="std_srvs/srv/SetBool"):
-    request_message: SetBool_Request = field(
-        default_factory=lambda *_: SetBool_Request()
-    )
-    response_message: SetBool_Response = field(
-        default_factory=lambda *_: SetBool_Response()
-    )
-    event_message: SetBool_Event = field(default_factory=lambda *_: SetBool_Event())
-
+HelperSetBool = idl.make_idl_service(
+    SetBool_Request,
+    SetBool_Response,
+)
 
 TYPES_TO_HASH: dict[type[idl.IdlStruct], str] = {
-    SetBool: "RIHS01_abe9e4bb6b41b40e6789712c00ec8871923e089af3f667a79992a428cff2da0a"
+    SetCameraInfo: "RIHS01_a10cca5d33dc637c8d49db50ab288701a3592bb9cd854f2f16a0659613b68984",
+    Trigger: "RIHS01_eeff2cd6fa5ad9d27cdf4dec64818317839b62f212a91e6b5304b634b2062c5f",
+    SetBool: "RIHS01_abe9e4bb6b41b40e6789712c00ec8871923e089af3f667a79992a428cff2da0a",
+    HelperSetBool: "RIHS01_abe9e4bb6b41b40e6789712c00ec8871923e089af3f667a79992a428cff2da0a",
 }
 
 
 def debug(my_type: Type[idl.IdlStruct]) -> Tuple[str, str]:
-    print(SetBool.json_type_description())
-    print(SetBool.hash_rihs01())
-    print(SetBool().request_message.hash_rihs01())
-    print(SetBool().response_message.hash_rihs01())
-    print(SetBool().event_message.hash_rihs01())
+    print(Trigger.json_type_description())
+    print(Trigger.hash_rihs01())
+    print(Trigger().request_message.hash_rihs01())
+    print(Trigger().response_message.hash_rihs01())
+    print(Trigger().event_message.hash_rihs01())
     time.sleep(2)
     cli = afor.Client(
         my_type.get_ros_type(), f"/get_client_hash/{my_type.get_type_name()}"
@@ -76,5 +59,6 @@ def init():
 
 
 @pytest.mark.parametrize("my_type", TYPES_TO_HASH.keys())
-async def test_hashes(my_type: Type[idl.IdlStruct], init):
+async def test_hashes(my_type: type[idl.IdlStruct], init):
+    # debug(my_type)
     assert my_type.hash_rihs01() == TYPES_TO_HASH[my_type]

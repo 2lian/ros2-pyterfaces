@@ -1,32 +1,49 @@
 from dataclasses import dataclass, field
 
-from ..idl import IdlService, IdlStruct, types
+from .. import idl
+from ..service_msgs.msg import ServiceEventInfo
 from ..visualization_msgs.msg import InteractiveMarker
-
-__all__ = [
-    "GetInteractiveMarkers",
-    "GetInteractiveMarkers_Request",
-    "GetInteractiveMarkers_Response",
-]
-
 
 @dataclass
 class GetInteractiveMarkers_Request(
-    IdlStruct, typename="visualization_msgs/srv/GetInteractiveMarkers_Request"
+    idl.IdlStruct, typename="visualization_msgs/srv/GetInteractiveMarkers_Request"
 ):
     pass
 
 
 @dataclass
 class GetInteractiveMarkers_Response(
-    IdlStruct, typename="visualization_msgs/srv/GetInteractiveMarkers_Response"
+    idl.IdlStruct, typename="visualization_msgs/srv/GetInteractiveMarkers_Response"
 ):
-    sequence_number: types.uint64 = 0
-    markers: types.sequence[InteractiveMarker] = field(default_factory=list)
+    sequence_number: idl.types.uint64 = 0
+    markers: idl.types.sequence[InteractiveMarker] = field(default_factory=list)
 
 
+@dataclass
+class GetInteractiveMarkers_Event(
+    idl.IdlStruct,
+    typename="visualization_msgs/srv/GetInteractiveMarkers_Event"
+):
+    info: ServiceEventInfo = field(default_factory=ServiceEventInfo)
+    request: idl.types.sequence[GetInteractiveMarkers_Request, 1] = field(
+        default_factory=list
+    )
+    response: idl.types.sequence[GetInteractiveMarkers_Response, 1] = field(
+        default_factory=list
+    )
+
+
+@dataclass
 class GetInteractiveMarkers(
-    IdlService, typename="visualization_msgs/srv/GetInteractiveMarkers"
+    idl.IdlServiceStruct,
+    typename="visualization_msgs/srv/GetInteractiveMarkers"
 ):
-    Request = GetInteractiveMarkers_Request
-    Response = GetInteractiveMarkers_Response
+    request_message: GetInteractiveMarkers_Request = field(
+        default_factory=GetInteractiveMarkers_Request
+    )
+    response_message: GetInteractiveMarkers_Response = field(
+        default_factory=GetInteractiveMarkers_Response
+    )
+    event_message: GetInteractiveMarkers_Event = field(
+        default_factory=GetInteractiveMarkers_Event
+    )

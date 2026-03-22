@@ -53,6 +53,10 @@ def _normalize(obj):
     if isinstance(obj, array.array):
         return [_normalize(x) for x in obj.tolist()]
 
+    # bytes-like -> list[int]
+    if isinstance(obj, (bytes, bytearray, memoryview)):
+        return [_normalize(x) for x in obj]
+
     # generic sequence -> list
     if isinstance(obj, Sequence) and not isinstance(
         obj, (str, bytes, bytearray, memoryview)
