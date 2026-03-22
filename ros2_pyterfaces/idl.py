@@ -8,6 +8,7 @@ from typing import (
     Literal,
     Mapping,
     Optional,
+    Protocol,
     Self,
     Sequence,
     Type,
@@ -18,6 +19,7 @@ from typing import (
     get_args,
     get_origin,
     get_type_hints,
+    overload,
 )
 
 import cyclonedds_idl as _idl
@@ -301,7 +303,8 @@ class IdlServiceEventStruct(IdlStruct, Generic[RequestT, ResponseT]):
     request: types.sequence[RequestT, 1]
     response: types.sequence[ResponseT, 1]
 
-EventT = TypeVar("EventT", bound=IdlServiceEventStruct)
+EventT = TypeVar("EventT", bound=IdlStruct)
+
 
 class IdlServiceStruct(IdlStruct, Generic[RequestT, ResponseT, EventT]):
     request_message: RequestT
@@ -309,8 +312,29 @@ class IdlServiceStruct(IdlStruct, Generic[RequestT, ResponseT, EventT]):
     event_message: EventT
 
 
-AnyIdlServiceEvent: TypeAlias = IdlServiceEventStruct[IdlStruct, IdlStruct]
-AnyIdlService: TypeAlias = IdlServiceStruct[IdlStruct, IdlStruct, AnyIdlServiceEvent]
+class IdlServiceType(Protocol[RequestT, ResponseT, EventT]):
+    Request: type[RequestT]
+    Response: type[ResponseT]
+    Event: type[EventT]
+
+    def __call__(
+        self,
+        request_message: RequestT = ...,
+        response_message: ResponseT = ...,
+        event_message: EventT = ...,
+    ) -> IdlServiceStruct[RequestT, ResponseT, EventT]: ...
+
+    def get_type_name(self) -> str: ...
+    def get_ros_type(self) -> type: ...
+    def to_ros_type(self) -> type: ...
+    def json_type_description(
+        self,
+        *,
+        root_type_name: str | None = ...,
+        type_name_overrides: Mapping[type, str] | None = ...,
+        indent: int = ...,
+    ) -> str: ...
+    def hash_rihs01(self) -> str: ...
 
 
 def _service_typename_from_message_types(
@@ -399,6 +423,11 @@ def _make_service_event_type(
     return event_type
 
 
+AnyIdlServiceEvent: TypeAlias = IdlStruct
+AnyIdlService: TypeAlias = IdlServiceStruct[IdlStruct, IdlStruct, IdlStruct]
+AnyIdlServiceType: TypeAlias = IdlServiceType[IdlStruct, IdlStruct, IdlStruct]
+
+
 SERVICE_FIELD_NAMES: Final[frozenset[str]] = frozenset(
     {"request_message", "response_message", "event_message"}
 )
@@ -420,15 +449,43 @@ def is_service_type(obj: Any) -> TypeGuard[type[AnyIdlService]]:
     return SERVICE_FIELD_NAMES.issubset(dataclass_fields)
 
 
+@overload
+def make_idl_service(
+    request_type: type[RequestT],
+    response_type: type[ResponseT],
+    *,
+    event_type: type[EventT],
+    _module_name: str | None = None,
+) -> IdlServiceType[RequestT, ResponseT, EventT]: ...
+
+
+@overload
 def make_idl_service(
     request_type: type[RequestT],
     response_type: type[ResponseT],
     *,
     _module_name: str | None = None,
-) -> type[
-    IdlServiceStruct[
-        RequestT, ResponseT, IdlServiceEventStruct[RequestT, ResponseT]
-    ]
+) -> IdlServiceType[
+    RequestT,
+    ResponseT,
+    IdlServiceEventStruct[RequestT, ResponseT],
+]: ...
+
+
+def make_idl_service(
+    request_type: type[RequestT],
+    response_type: type[ResponseT],
+    *,
+    event_type: type[EventT] | None = None,
+    _module_name: str | None = None,
+) -> IdlServiceType[
+    RequestT,
+    ResponseT,
+    EventT,
+] | IdlServiceType[
+    RequestT,
+    ResponseT,
+    IdlServiceEventStruct[RequestT, ResponseT],
 ]:
     """
     Generate an IDL service type from request and response message types.
@@ -436,6 +493,7 @@ def make_idl_service(
     Args:
         request_type: Request message type.
         response_type: Response message type.
+        event_type: Optional explicit event message type.
         _module_name: Optional Python module name.
 
     Returns:
@@ -453,42 +511,63 @@ def make_idl_service(
     service_typename = _service_typename_from_message_types(request_type, response_type)
     service_name = service_typename.rsplit("/", 1)[1]
     module_name = _module_name or request_type.__module__
-    event_type = _make_service_event_type(
-        service_typename=service_typename,
-        module_name=module_name,
-        request_type=request_type,
-        response_type=response_type,
-    )
+    uses_generated_event_type = event_type is None
+    if event_type is None:
+        resolved_event_type: type[IdlStruct] = _make_service_event_type(
+            service_typename=service_typename,
+            module_name=module_name,
+            request_type=request_type,
+            response_type=response_type,
+        )
+    else:
+        if not issubclass(event_type, IdlStruct):
+            raise TypeError(f"event_type must inherit from IdlStruct, got {event_type!r}")
+        expected_event_typename = f"{service_typename}_Event"
+        if event_type.get_type_name() != expected_event_typename:
+            raise ValueError(
+                f"event_type must have type name {expected_event_typename!r}, "
+                f"got {event_type.get_type_name()!r}"
+            )
+        resolved_event_type = event_type
+
     service_namespace = {
         "__module__": module_name,
         "__idl_typename__": service_typename,
         "__annotations__": {
-            "Request": ClassVar[Type[request_type]],
-            "Response": ClassVar[Type[response_type]],
             "request_message": request_type,
             "response_message": response_type,
-            "event_message": event_type,
+            "event_message": resolved_event_type,
         },
         "Request": request_type,
         "Response": response_type,
+        "Event": resolved_event_type,
         "request_message": field(default_factory=request_type),
         "response_message": field(default_factory=response_type),
-        "event_message": field(default_factory=event_type),
+        "event_message": field(default_factory=resolved_event_type),
     }
-    service_type = cast(
-        type[
-            IdlServiceStruct[
-                RequestT, ResponseT, IdlServiceEventStruct[RequestT, ResponseT]
-            ]
-        ],
-        dataclass(
-            IdlMetaIgnoreFinal(
-                service_name,
-                (IdlServiceStruct,),
-                service_namespace,
-                typename=service_typename,
-            )
-        ),
+    service_type = dataclass(
+        IdlMetaIgnoreFinal(
+            service_name,
+            (IdlServiceStruct,),
+            service_namespace,
+            typename=service_typename,
+        )
     )
     service_type.__idl_typename__ = service_typename
-    return service_type
+    if uses_generated_event_type:
+        return cast(
+            IdlServiceType[
+                RequestT,
+                ResponseT,
+                IdlServiceEventStruct[RequestT, ResponseT],
+            ],
+            service_type,
+        )
+    return cast(
+        IdlServiceType[
+            RequestT,
+            ResponseT,
+            EventT,
+        ],
+        service_type,
+    )

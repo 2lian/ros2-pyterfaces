@@ -21,6 +21,7 @@ from ros2_pyterfaces.all_srvs import (
     LoadMap_Response,
     SelfTest_Response,
     SetBool,
+    SetBool_Event,
     SetBool_Request,
     SetBool_Response,
     SetCameraInfo_Response,
@@ -196,7 +197,9 @@ def test_service_wrapper_request_response_links():
 
     assert SetBool.Request is SetBool_Request
     assert SetBool.Response is SetBool_Response
+    assert SetBool.Event is SetBool_Event
     assert LoadMap.Response is LoadMap_Response
+    assert GetTypeDescription.Event is GetTypeDescription_Event
     assert setbool_hints["request_message"] is SetBool_Request
     assert setbool_hints["response_message"] is SetBool_Response
     assert setbool_hints["event_message"].get_type_name() == "std_srvs/srv/SetBool_Event"
@@ -207,6 +210,28 @@ def test_service_wrapper_request_response_links():
     )
     assert GetTypeDescription.Request is GetTypeDescription_Request
     assert GetTypeDescription.Response is GetTypeDescription_Response
+
+
+def test_setbool_readme_service_usage():
+    some_request: SetBool_Request = SetBool.Request(data=True)
+    some_response: SetBool_Response = SetBool.Response(
+        success=True,
+        message="yey",
+    )
+
+    ros_srv_type = SetBool.to_ros_type()
+
+    ros_request = some_request.to_ros()
+    request_again = SetBool.Request.from_ros(ros_request)
+
+    ros_response = some_response.to_ros()
+    response_again = SetBool.Response.from_ros(ros_response)
+
+    assert ros_srv_type is SetBool.get_ros_type()
+    assert isinstance(ros_request, ros_srv_type.Request)
+    assert isinstance(ros_response, ros_srv_type.Response)
+    assert_strictly_eq(request_again, some_request)
+    assert_strictly_eq(response_again, some_response)
 
 
 def test_all_srvs_exposes_event_types():

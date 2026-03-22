@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import ClassVar, Type
 
 from .. import idl
 from ..service_msgs.msg import ServiceEventInfo
@@ -30,13 +29,12 @@ class SetCameraInfo_Event(
     response: idl.types.sequence[SetCameraInfo_Response, 1] = field(default_factory=list)
 
 
-@dataclass
-class SetCameraInfo(
-    idl.IdlServiceStruct,
-    typename="sensor_msgs/srv/SetCameraInfo",
-):
-    Request: ClassVar[Type[SetCameraInfo_Request]] = SetCameraInfo_Request
-    Response: ClassVar[Type[SetCameraInfo_Response]] = SetCameraInfo_Response
-    request_message: SetCameraInfo_Request = field(default_factory=SetCameraInfo_Request)
-    response_message: SetCameraInfo_Response = field(default_factory=SetCameraInfo_Response)
-    event_message: SetCameraInfo_Event = field(default_factory=SetCameraInfo_Event)
+SetCameraInfo: idl.IdlServiceType[
+    SetCameraInfo_Request,
+    SetCameraInfo_Response,
+    SetCameraInfo_Event,
+] = idl.make_idl_service(
+    SetCameraInfo_Request,
+    SetCameraInfo_Response,
+    event_type=SetCameraInfo_Event,
+)

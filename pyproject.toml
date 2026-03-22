@@ -15,3 +15,6 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ros2_pyterfaces", "ros2_pyterfaces.*"]
+
+[tool.setuptools.package-data]
+ros2_pyterfaces = ["py.typed"]

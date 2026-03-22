@@ -4,6 +4,7 @@ import pytest
 
 from ros2_pyterfaces import idl
 from ros2_pyterfaces.all_srvs import (
+    SetBool_Event,
     SetBool_Request,
     SetBool_Response,
     Trigger_Response,
@@ -34,6 +35,7 @@ def test_make_idl_service_builds_expected_service_and_event_types():
 
     assert generated_type.Request is SetBool_Request
     assert generated_type.Response is SetBool_Response
+    assert generated_type.Event is event_type
     assert service_hints["request_message"] is SetBool_Request
     assert service_hints["response_message"] is SetBool_Response
     assert issubclass(event_type, idl.IdlStruct)
@@ -43,6 +45,21 @@ def test_make_idl_service_builds_expected_service_and_event_types():
     assert event_hints["info"] is ServiceEventInfo
     assert event_hints["request"] == idl.types.sequence[SetBool_Request, 1]
     assert event_hints["response"] == idl.types.sequence[SetBool_Response, 1]
+
+
+def test_make_idl_service_uses_explicit_event_type():
+    generated_type = idl.make_idl_service(
+        SetBool_Request,
+        SetBool_Response,
+        event_type=SetBool_Event,
+        _module_name=__name__,
+    )
+
+    service_hints = get_type_hints(generated_type)
+
+    assert generated_type.Event is SetBool_Event
+    assert service_hints["event_message"] is SetBool_Event
+    assert generated_type.hash_rihs01() == SETBOOL_HASH
 
 
 def test_make_idl_service_rejects_mismatched_request_response_types():

@@ -6122,7 +6122,7 @@ packages:
 - pypi: ./
   name: ros2-pyterfaces
   version: 0.1.0
-  sha256: 82021946285064aad0ea996541f1065d0447d54aab675b0b6be96df9ea524e5b
+  sha256: c974c3e9484d1031f87943d25a25a1462d6363fa5bff24e22f94db0216daa155
   requires_dist:
   - cyclonedds-idl
   - numpy

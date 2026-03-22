@@ -37,7 +37,7 @@ my_msg_again: Vector3 = Vector3.deserialize(blob_bytes)
 
 # ROS 2 metadata
 json_type_description = Vector3.json_type_description()
-hash_rihs01 = Vector3.hash_rihs01()
+ros_hash = Vector3.hash_rihs01()
 
 # ROS 2 conversion
 ros_msg_type = Vector3.to_ros_type()
@@ -48,16 +48,14 @@ our_msg: Vector3 = Vector3.from_ros(ros_msg)
 ### Service
 
 Services follow the ROS naming pattern: `*_Request`, `*_Response`, `*_Event`,
-stored in small wrapper type. If you want less boilerplate, `make_idl_service(...)`
-can generate the service wrapper and the `*_Event` type from a request and a
-response type.
+plus a small wrapper type. The serializable types are the request, response,
+and event dataclasses. The top-level service type is usually created with
+`make_idl_service(...)`. If you omit `event_type=...` (most cases), the factory
+generates a matching event type for you.
 
 ```python
-from dataclasses import dataclass, field
-from typing import ClassVar, Type
-
+from dataclasses import dataclass
 from ros2_pyterfaces import idl
-from ros2_pyterfaces.service_msgs.msg import ServiceEventInfo
 
 # Same classes definition as Messages for *_Request *_Response
 @dataclass
@@ -70,38 +68,25 @@ class SetBool_Response(idl.IdlStruct, typename="std_srvs/srv/SetBool_Response"):
     success: bool = False
     message: str = ""
 
-# Helper function to create a service class from `*_Request` and `*_Response`
-MySetBool = idl.make_idl_service(SetBool_Request, SetBool_Response)
+# Top-level service type
+SetBool = idl.make_idl_service(SetBool_Request, SetBool_Response)
 
-# get the hash
-ros_hash = MySetBool.hash_rihs01()
+# Serialization
+some_request: SetBool_Request = SetBool.Request(data=True)
+some_response: SetBool_Response = SetBool.Response(success=True, message="yey")
 
-# instantiate the request or response objects, or even the service
-some_request: SetBool_Request = MySetBool.Request(data=True)
-some_response : SetBool_Response = MySetBool.Response(success=True, message="yey")
-some_srv = MySetBool(SetBool_Request(data=True), SetBool_Response(success=True))
+# ROS 2 metadata
+json_type_description = SetBool.json_type_description()
+ros_hash = SetBool.hash_rihs01()
 
-# Full manual definition, if needed for better static typing
-@dataclass
-class SetBool_Event(
-    idl.IdlStruct,
-    typename="std_srvs/srv/SetBool_Event",
-):
-    info: ServiceEventInfo = field(default_factory=ServiceEventInfo)
-    request: idl.types.sequence[SetBool_Request, 1] = field(default_factory=list)
-    response: idl.types.sequence[SetBool_Response, 1] = field(default_factory=list)
+# ROS 2 conversion
+ros_srv_type = SetBool.to_ros_type()
 
+ros_request = some_request.to_ros()
+request_again = SetBool.Request.from_ros(ros_request)
 
-@dataclass
-class SetBool(
-    idl.IdlServiceStruct,
-    typename="std_srvs/srv/SetBool",
-):
-    Request: ClassVar[Type[SetBool_Request]] = SetBool_Request
-    Response: ClassVar[Type[SetBool_Response]] = SetBool_Response
-    request_message: SetBool_Request = field(default_factory=SetBool_Request)
-    response_message: SetBool_Response = field(default_factory=SetBool_Response)
-    event_message: SetBool_Event = field(default_factory=SetBool_Event)
+ros_response = some_response.to_ros()
+response_again = SetBool.Response.from_ros(ros_response)
 ```
 
 > [!WARNING]
@@ -110,27 +95,16 @@ class SetBool(
 
 ## Included Packages
 
-- `ros2_pyterfaces.builtin_interfaces`
-- `ros2_pyterfaces.diagnostic_msgs`
-- `ros2_pyterfaces.geometry_msgs`
-- `ros2_pyterfaces.nav_msgs`
-- `ros2_pyterfaces.sensor_msgs`
-- `ros2_pyterfaces.service_msgs`
-- `ros2_pyterfaces.shape_msgs`
-- `ros2_pyterfaces.std_msgs`
-- `ros2_pyterfaces.std_srvs`
-- `ros2_pyterfaces.stereo_msgs`
-- `ros2_pyterfaces.type_description_interfaces`
-- `ros2_pyterfaces.trajectory_msgs`
-- `ros2_pyterfaces.visualization_msgs`
-
-## Structure
-
-- `ros2_pyterfaces.idl`: IDL structure defining messages.
-- `ros2_pyterfaces.<package>.msg`: Messages
-- `ros2_pyterfaces.<package>.srv`: Services
-
-> [!NOTE]
-> Services are represented as `<Name>_Request`, `<Name>_Response`,
-> `<Name>_Event`, and a small `<Name>` wrapper exposing
-> `request_message`, `response_message`, and `event_message`.
+- `ros2_pyterfaces.builtin_interfaces`: [msg.py](ros2_pyterfaces/builtin_interfaces/msg.py)
+- `ros2_pyterfaces.diagnostic_msgs`: [msg.py](ros2_pyterfaces/diagnostic_msgs/msg.py), [srv.py](ros2_pyterfaces/diagnostic_msgs/srv.py)
+- `ros2_pyterfaces.geometry_msgs`: [msg.py](ros2_pyterfaces/geometry_msgs/msg.py)
+- `ros2_pyterfaces.nav_msgs`: [msg.py](ros2_pyterfaces/nav_msgs/msg.py), [srv.py](ros2_pyterfaces/nav_msgs/srv.py)
+- `ros2_pyterfaces.sensor_msgs`: [msg.py](ros2_pyterfaces/sensor_msgs/msg.py), [srv.py](ros2_pyterfaces/sensor_msgs/srv.py)
+- `ros2_pyterfaces.service_msgs`: [msg.py](ros2_pyterfaces/service_msgs/msg.py)
+- `ros2_pyterfaces.shape_msgs`: [msg.py](ros2_pyterfaces/shape_msgs/msg.py)
+- `ros2_pyterfaces.std_msgs`: [msg.py](ros2_pyterfaces/std_msgs/msg.py)
+- `ros2_pyterfaces.std_srvs`: [srv.py](ros2_pyterfaces/std_srvs/srv.py)
+- `ros2_pyterfaces.stereo_msgs`: [msg.py](ros2_pyterfaces/stereo_msgs/msg.py)
+- `ros2_pyterfaces.type_description_interfaces`: [msg.py](ros2_pyterfaces/type_description_interfaces/msg.py), [srv.py](ros2_pyterfaces/type_description_interfaces/srv.py)
+- `ros2_pyterfaces.trajectory_msgs`: [msg.py](ros2_pyterfaces/trajectory_msgs/msg.py)
+- `ros2_pyterfaces.visualization_msgs`: [msg.py](ros2_pyterfaces/visualization_msgs/msg.py), [srv.py](ros2_pyterfaces/visualization_msgs/srv.py)

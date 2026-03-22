@@ -7,12 +7,19 @@ import pytest
 import rclpy
 
 from ros2_pyterfaces import all_msgs, all_srvs, idl
-from ros2_pyterfaces.all_srvs import SetBool, SetBool_Request, SetBool_Response, Trigger
+from ros2_pyterfaces.all_srvs import (
+    SetBool,
+    SetBool_Event,
+    SetBool_Request,
+    SetBool_Response,
+    Trigger,
+)
 from ros2_pyterfaces.sensor_msgs.srv import SetCameraInfo
 
 HelperSetBool = idl.make_idl_service(
     SetBool_Request,
     SetBool_Response,
+    event_type=SetBool_Event,
 )
 
 TYPES_TO_HASH: dict[type[idl.IdlStruct], str] = {
