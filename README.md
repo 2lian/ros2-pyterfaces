@@ -93,18 +93,34 @@ response_again = SetBool.Response.from_ros(ros_response)
 > Not implemented yet:
 > - Actions
 
-## Included Packages
+## Replicated ROS2 Repos
+
+- [`common_interfaces`](https://github.com/ros2/common_interfaces)
+  - vendored here: [`ROS_2_repos/common_interfaces`](ROS_2_repos/common_interfaces)
+- [`rcl_interfaces`](https://github.com/ros2/rcl_interfaces)
+  - vendored here: [`ROS_2_repos/rcl_interfaces`](ROS_2_repos/rcl_interfaces)
+- [`unique_identifier_msgs`](https://github.com/ros2/unique_identifier_msgs)
+  - vendored here: [`ROS_2_repos/unique_identifier_msgs`](ROS_2_repos/unique_identifier_msgs)
+
+### Included Interfaces
 
 - `ros2_pyterfaces.builtin_interfaces`: [msg.py](ros2_pyterfaces/builtin_interfaces/msg.py)
+- `ros2_pyterfaces.composition_interfaces`: [srv.py](ros2_pyterfaces/composition_interfaces/srv.py)
 - `ros2_pyterfaces.diagnostic_msgs`: [msg.py](ros2_pyterfaces/diagnostic_msgs/msg.py), [srv.py](ros2_pyterfaces/diagnostic_msgs/srv.py)
 - `ros2_pyterfaces.geometry_msgs`: [msg.py](ros2_pyterfaces/geometry_msgs/msg.py)
+- `ros2_pyterfaces.lifecycle_msgs`: [msg.py](ros2_pyterfaces/lifecycle_msgs/msg.py), [srv.py](ros2_pyterfaces/lifecycle_msgs/srv.py)
 - `ros2_pyterfaces.nav_msgs`: [msg.py](ros2_pyterfaces/nav_msgs/msg.py), [srv.py](ros2_pyterfaces/nav_msgs/srv.py)
+- `ros2_pyterfaces.rcl_interfaces`: [msg.py](ros2_pyterfaces/rcl_interfaces/msg.py), [srv.py](ros2_pyterfaces/rcl_interfaces/srv.py)
+- `ros2_pyterfaces.rosgraph_msgs`: [msg.py](ros2_pyterfaces/rosgraph_msgs/msg.py)
 - `ros2_pyterfaces.sensor_msgs`: [msg.py](ros2_pyterfaces/sensor_msgs/msg.py), [srv.py](ros2_pyterfaces/sensor_msgs/srv.py)
 - `ros2_pyterfaces.service_msgs`: [msg.py](ros2_pyterfaces/service_msgs/msg.py)
 - `ros2_pyterfaces.shape_msgs`: [msg.py](ros2_pyterfaces/shape_msgs/msg.py)
+- `ros2_pyterfaces.statistics_msgs`: [msg.py](ros2_pyterfaces/statistics_msgs/msg.py)
 - `ros2_pyterfaces.std_msgs`: [msg.py](ros2_pyterfaces/std_msgs/msg.py)
 - `ros2_pyterfaces.std_srvs`: [srv.py](ros2_pyterfaces/std_srvs/srv.py)
 - `ros2_pyterfaces.stereo_msgs`: [msg.py](ros2_pyterfaces/stereo_msgs/msg.py)
+- `ros2_pyterfaces.test_msgs`: [msg.py](ros2_pyterfaces/test_msgs/msg.py)
 - `ros2_pyterfaces.type_description_interfaces`: [msg.py](ros2_pyterfaces/type_description_interfaces/msg.py), [srv.py](ros2_pyterfaces/type_description_interfaces/srv.py)
 - `ros2_pyterfaces.trajectory_msgs`: [msg.py](ros2_pyterfaces/trajectory_msgs/msg.py)
+- `ros2_pyterfaces.unique_identifier_msgs`: [msg.py](ros2_pyterfaces/unique_identifier_msgs/msg.py)
 - `ros2_pyterfaces.visualization_msgs`: [msg.py](ros2_pyterfaces/visualization_msgs/msg.py), [srv.py](ros2_pyterfaces/visualization_msgs/srv.py)

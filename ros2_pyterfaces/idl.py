@@ -292,7 +292,26 @@ class DummyEmpty(IdlStruct, typename="does/not/matter/empty"):
     structure_needs_at_least_one_member: types.uint8 = 0
 
 
-from .service_msgs.msg import ServiceEventInfo
+@dataclass
+class Time(IdlStruct, typename="builtin_interfaces/msg/Time"):
+    sec: types.int32 = 0
+    nanosec: types.uint32 = 0
+
+
+@dataclass
+class ServiceEventInfo(IdlStruct, typename="service_msgs/msg/ServiceEventInfo"):
+    REQUEST_SENT: ClassVar[Literal[0]] = 0
+    REQUEST_RECEIVED: ClassVar[Literal[1]] = 1
+    RESPONSE_SENT: ClassVar[Literal[2]] = 2
+    RESPONSE_RECEIVED: ClassVar[Literal[3]] = 3
+
+    event_type: types.uint8 = 0
+    stamp: Time = field(default_factory=lambda *_: Time())
+    client_gid: types.array[types.uint8, 16] = field(
+        default_factory=lambda *_: [0] * 16
+    )
+    sequence_number: types.int64 = 0
+
 
 RequestT = TypeVar("RequestT", bound=IdlStruct)
 ResponseT = TypeVar("ResponseT", bound=IdlStruct)
@@ -302,6 +321,7 @@ class IdlServiceEventStruct(IdlStruct, Generic[RequestT, ResponseT]):
     info: ServiceEventInfo
     request: types.sequence[RequestT, 1]
     response: types.sequence[ResponseT, 1]
+
 
 EventT = TypeVar("EventT", bound=IdlStruct)
 
@@ -478,15 +498,18 @@ def make_idl_service(
     *,
     event_type: type[EventT] | None = None,
     _module_name: str | None = None,
-) -> IdlServiceType[
-    RequestT,
-    ResponseT,
-    EventT,
-] | IdlServiceType[
-    RequestT,
-    ResponseT,
-    IdlServiceEventStruct[RequestT, ResponseT],
-]:
+) -> (
+    IdlServiceType[
+        RequestT,
+        ResponseT,
+        EventT,
+    ]
+    | IdlServiceType[
+        RequestT,
+        ResponseT,
+        IdlServiceEventStruct[RequestT, ResponseT],
+    ]
+):
     """
     Generate an IDL service type from request and response message types.
 
@@ -521,7 +544,9 @@ def make_idl_service(
         )
     else:
         if not issubclass(event_type, IdlStruct):
-            raise TypeError(f"event_type must inherit from IdlStruct, got {event_type!r}")
+            raise TypeError(
+                f"event_type must inherit from IdlStruct, got {event_type!r}"
+            )
         expected_event_typename = f"{service_typename}_Event"
         if event_type.get_type_name() != expected_event_typename:
             raise ValueError(
