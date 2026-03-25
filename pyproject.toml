@@ -1,16 +1,52 @@
 [project]
 name = "ros2_pyterfaces"
 version = "0.1.0"
-description = "Reimplements ROS 2 messages tools (e.g., type hash) and common interfaces"
+description = "ROS 2 interface definitions, serialization, hashes, and ROS Python conversions"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Elian NEPPEL", email = "elian.dev@posteo.com" },
+]
 requires-python = ">=3.10"
+keywords = [
+  "ros",
+  "ros2",
+  "idl",
+  "dds",
+  "cyclonedds",
+  "messages",
+  "services",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
 dependencies = [
   "cyclonedds_idl",
   "numpy",
 ]
 
+[project.urls]
+Homepage = "https://github.com/2lian/ros2-pyterfaces"
+Repository = "https://github.com/2lian/ros2-pyterfaces"
+Issues = "https://github.com/2lian/ros2-pyterfaces/issues"
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
