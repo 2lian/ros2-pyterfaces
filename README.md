@@ -9,6 +9,16 @@ reimplemented and tested to interoperate with ROS.
 > [!NOTE]
 > This is a low level tool to send/receive raw payload with ROS 2, and to set up communications on the RMW.
 
+## Table of Contents
+
+- [Install](#install)
+- [Example](#example)
+  - [Message](#message)
+  - [Service](#service)
+- [Attribution](#attribution)
+- [Replicated ROS 2 Repos](#replicated-ros-2-repos)
+  - [Included Interfaces](#included-interfaces)
+
 ## Install
 
 ```bash
@@ -93,16 +103,18 @@ response_again = SetBool.Response.from_ros(ros_response)
 > Not implemented yet:
 > - Actions
 
-## Replicated ROS2 Repos
+## Attribution
+
+The low-level IDL model, serialization behavior, and part of the user API are
+dependent on (fantastic) Cyclone DDS Python's idl: https://github.com/eclipse-cyclonedds/cyclonedds-python.
+
+### Replicated ROS 2  Messages Repos
 
 - [`common_interfaces`](https://github.com/ros2/common_interfaces)
-  - vendored here: [`ROS_2_repos/common_interfaces`](ROS_2_repos/common_interfaces)
 - [`rcl_interfaces`](https://github.com/ros2/rcl_interfaces)
-  - vendored here: [`ROS_2_repos/rcl_interfaces`](ROS_2_repos/rcl_interfaces)
 - [`unique_identifier_msgs`](https://github.com/ros2/unique_identifier_msgs)
-  - vendored here: [`ROS_2_repos/unique_identifier_msgs`](ROS_2_repos/unique_identifier_msgs)
 
-### Included Interfaces
+## Included Interfaces
 
 - `ros2_pyterfaces.builtin_interfaces`: [msg.py](ros2_pyterfaces/builtin_interfaces/msg.py)
 - `ros2_pyterfaces.composition_interfaces`: [srv.py](ros2_pyterfaces/composition_interfaces/srv.py)
