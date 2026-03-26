@@ -13,9 +13,10 @@ from .statistics_msgs.msg import *
 from .std_msgs.msg import *
 from .stereo_msgs.msg import *
 from .trajectory_msgs.msg import *
+from .type_description_interfaces.msg import Field, FieldType, IndividualTypeDescription
 from .type_description_interfaces.msg import (
     KeyValue as TypeDescriptionInterfaces_KeyValue,
 )
-from .type_description_interfaces.msg import *
+from .type_description_interfaces.msg import TypeDescription, TypeSource
 from .unique_identifier_msgs.msg import *
 from .visualization_msgs.msg import *

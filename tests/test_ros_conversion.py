@@ -26,6 +26,7 @@ NOT_IN_ROS = [
 TYPES = [t for t in TYPES if t.get_type_name() not in NOT_IN_ROS]
 
 VALUES = [
+    KeyValue(key="mode", value="auto"),
     String(data="hello"),
     Float32(data=np.float32(np.pi)),
     Float64(data=np.pi),

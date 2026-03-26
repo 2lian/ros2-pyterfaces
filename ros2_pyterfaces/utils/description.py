@@ -11,13 +11,6 @@ from typing import Any, Dict
 from cyclonedds_idl import IdlStruct, types  # I wanna delete this and depend on .idl
 
 
-def fixed_array(default_value, length: int):
-    """
-    Build a fixed-size list from deep-copied values.
-    """
-    return [copy.deepcopy(default_value) for _ in range(length)]
-
-
 def ros2_type_hash_from_json(type_description_json: str) -> "hashlib._Hash":
     """
     Compute the raw RIHS01 hash from type description JSON.
