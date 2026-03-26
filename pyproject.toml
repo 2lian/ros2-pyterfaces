@@ -1,6 +1,6 @@
 [project]
 name = "ros2_pyterfaces"
-version = "0.1.0"
+version = "0.1.1"
 description = "ROS 2 interface definitions, serialization, hashes, and ROS Python conversions"
 readme = "README.md"
 license = { file = "LICENSE" }

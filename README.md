@@ -24,7 +24,7 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 ## Install
 
 ```bash
-pip install git+https://github.com/2lian/ros2-pyterfaces.git
+pip install ros2_pyterfaces
 ```
 
 ## Example
