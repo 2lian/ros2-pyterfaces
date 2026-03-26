@@ -1,10 +1,12 @@
 # ROS 2 PyTerfaces IDL
 
-ROS 2 message and service definitions, metadata, and serialization in Python.
+ROS 2 message and service definitions, metadata and serialization in Python.
 
 Create new message types, (de)serialize them, compute the RIHS01 hash, and
-convert to and from ROS 2 Python messages. ROS 2 `common_interfaces` are
-reimplemented and tested to interoperate with ROS.
+convert to and from ROS 2 Python messages. All ROS 2 `common_interfaces` are
+reimplemented, and every message tested to interoperate with ROS.
+
+Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/idl.html), but specialized for ROS 2.
 
 > [!NOTE]
 > This is a low level tool to send/receive raw payload with ROS 2, and to set up communications on the RMW.
