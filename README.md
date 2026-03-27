@@ -29,6 +29,13 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 pip install ros2_pyterfaces
 ```
 
+> [!NOTE]
+> Some ROS distros have minor differences -- mainly `to_ros()` / `from_ros()`.
+> To override the distro, either set the environment variable
+> `ROS_DISTRO=YOUR_DISTRO` or set it in python 
+> `ros2_pyterfaces.DISTRO = ros2_pyterfaces.Distro.YOUR_DISTRO` 
+> (before importing other submodules).
+
 ## Reliability
 
 Each message type in this library is heavily tested, for a total of more than

@@ -5,7 +5,7 @@ from typing import List, Mapping, Sequence, Type
 
 import numpy as np
 
-from ros2_pyterfaces import all_msgs, idl
+from ros2_pyterfaces import DISTRO, Distro, all_msgs, idl
 from ros2_pyterfaces.idl import IdlStruct
 from ros2_pyterfaces.utils.random import random_message
 
@@ -13,6 +13,21 @@ NOT_IN_ROS = [
     "nav_msgs/msg/Trajectory",
     "nav_msgs/msg/TrajectoryPoint",
 ]
+NOT_IN_HUMBLE = {
+    "rcl_interfaces/msg/LoggerLevel",
+    "rcl_interfaces/msg/SetLoggerLevelsResult",
+    "service_msgs/msg/ServiceEventInfo",
+    "type_description_interfaces/msg/Field",
+    "type_description_interfaces/msg/FieldType",
+    "type_description_interfaces/msg/IndividualTypeDescription",
+    "type_description_interfaces/msg/KeyValue",
+    "type_description_interfaces/msg/TypeDescription",
+    "type_description_interfaces/msg/TypeSource",
+}
+EXCLUDED_MESSAGE_TYPES = set(NOT_IN_ROS)
+if DISTRO == Distro.HUMBLE:
+    EXCLUDED_MESSAGE_TYPES.update(NOT_IN_HUMBLE)
+
 TYPES: List[Type[idl.IdlStruct]] = sorted(
     [
         obj
@@ -20,7 +35,7 @@ TYPES: List[Type[idl.IdlStruct]] = sorted(
         if inspect.isclass(obj)
         and issubclass(obj, idl.IdlStruct)
         and obj is not idl.IdlStruct
-        and obj.get_type_name() not in NOT_IN_ROS
+        and obj.get_type_name() not in EXCLUDED_MESSAGE_TYPES
     ],
     key=lambda msg_type: msg_type.get_type_name(),
 )

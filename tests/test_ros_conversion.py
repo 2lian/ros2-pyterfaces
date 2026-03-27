@@ -8,8 +8,9 @@ from utils import (
     assert_strictly_eq,
 )
 
-from ros2_pyterfaces import idl
+from ros2_pyterfaces import DISTRO, Distro, idl
 from ros2_pyterfaces.geometry_msgs.msg import Vector3
+from ros2_pyterfaces.rcl_interfaces.msg import LoggerLevel
 from ros2_pyterfaces.std_msgs.msg import Float32, Float64
 
 
@@ -50,3 +51,14 @@ def test_to_ros_coerces_scalar_float_fields():
     assert isinstance(vector3_msg.x, float)
     assert isinstance(vector3_msg.y, float)
     assert isinstance(vector3_msg.z, float)
+
+
+@pytest.mark.skipif(
+    DISTRO != Distro.HUMBLE, reason="LoggerLevel exists outside the Humble gap"
+)
+def test_missing_ros_type_error_is_explicit():
+    with pytest.raises(
+        AttributeError,
+        match="ROS equivalent for rcl_interfaces/msg/LoggerLevel does not seem to exist",
+    ):
+        LoggerLevel.get_ros_type()

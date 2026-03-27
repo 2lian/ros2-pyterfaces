@@ -7,7 +7,7 @@ import pytest
 from rclpy.serialization import deserialize_message, serialize_message
 from utils import assert_msg_equal_as_lists, assert_strictly_eq
 
-from ros2_pyterfaces import all_srvs, idl
+from ros2_pyterfaces import DISTRO, Distro, all_srvs, idl
 from ros2_pyterfaces.all_srvs import (
     AddDiagnostics,
     AddDiagnostics_Request,
@@ -43,10 +43,64 @@ from ros2_pyterfaces.type_description_interfaces.msg import (
 )
 from ros2_pyterfaces.visualization_msgs.msg import InteractiveMarker
 
+NOT_IN_HUMBLE_SERVICE_TYPES = {
+    "rcl_interfaces/srv/GetLoggerLevels",
+    "rcl_interfaces/srv/SetLoggerLevels",
+    "type_description_interfaces/srv/GetTypeDescription",
+}
+NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES = {
+    "composition_interfaces/srv/ListNodes_Event",
+    "composition_interfaces/srv/LoadNode_Event",
+    "composition_interfaces/srv/UnloadNode_Event",
+    "diagnostic_msgs/srv/AddDiagnostics_Event",
+    "diagnostic_msgs/srv/SelfTest_Event",
+    "lifecycle_msgs/srv/ChangeState_Event",
+    "lifecycle_msgs/srv/GetAvailableStates_Event",
+    "lifecycle_msgs/srv/GetAvailableTransitions_Event",
+    "lifecycle_msgs/srv/GetState_Event",
+    "nav_msgs/srv/GetMap_Event",
+    "nav_msgs/srv/GetPlan_Event",
+    "nav_msgs/srv/LoadMap_Event",
+    "nav_msgs/srv/SetMap_Event",
+    "rcl_interfaces/msg/LoggerLevel",
+    "rcl_interfaces/msg/SetLoggerLevelsResult",
+    "rcl_interfaces/srv/DescribeParameters_Event",
+    "rcl_interfaces/srv/GetLoggerLevels_Event",
+    "rcl_interfaces/srv/GetLoggerLevels_Request",
+    "rcl_interfaces/srv/GetLoggerLevels_Response",
+    "rcl_interfaces/srv/GetParameterTypes_Event",
+    "rcl_interfaces/srv/GetParameters_Event",
+    "rcl_interfaces/srv/ListParameters_Event",
+    "rcl_interfaces/srv/SetLoggerLevels_Event",
+    "rcl_interfaces/srv/SetLoggerLevels_Request",
+    "rcl_interfaces/srv/SetLoggerLevels_Response",
+    "rcl_interfaces/srv/SetParametersAtomically_Event",
+    "rcl_interfaces/srv/SetParameters_Event",
+    "sensor_msgs/srv/SetCameraInfo_Event",
+    "service_msgs/msg/ServiceEventInfo",
+    "std_srvs/srv/Empty_Event",
+    "std_srvs/srv/SetBool_Event",
+    "std_srvs/srv/Trigger_Event",
+    "type_description_interfaces/msg/KeyValue",
+    "type_description_interfaces/msg/TypeDescription",
+    "type_description_interfaces/msg/TypeSource",
+    "type_description_interfaces/srv/GetTypeDescription_Event",
+    "type_description_interfaces/srv/GetTypeDescription_Request",
+    "type_description_interfaces/srv/GetTypeDescription_Response",
+    "visualization_msgs/srv/GetInteractiveMarkers_Event",
+}
+EXCLUDED_SERVICE_TYPES = set()
+EXCLUDED_SERVICE_MESSAGE_TYPES = set()
+if DISTRO == Distro.HUMBLE:
+    EXCLUDED_SERVICE_TYPES.update(NOT_IN_HUMBLE_SERVICE_TYPES)
+    EXCLUDED_SERVICE_MESSAGE_TYPES.update(NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES)
+
 SERVICE_TYPES = [
     obj
     for obj in vars(all_srvs).values()
-    if inspect.isclass(obj) and idl.is_service_type(obj)
+    if inspect.isclass(obj)
+    and idl.is_service_type(obj)
+    and obj.get_type_name() not in EXCLUDED_SERVICE_TYPES
 ]
 REQUEST_RESPONSE_TYPES: List[Type[idl.IdlStruct]] = [
     obj
@@ -55,6 +109,7 @@ REQUEST_RESPONSE_TYPES: List[Type[idl.IdlStruct]] = [
     and issubclass(obj, idl.IdlStruct)
     and obj is not idl.IdlStruct
     and not idl.is_service_type(obj)
+    and obj.get_type_name() not in EXCLUDED_SERVICE_MESSAGE_TYPES
 ]
 
 VALUES = [
@@ -121,6 +176,11 @@ VALUES = [
         sequence_number=3,
         markers=[InteractiveMarker(name="control")],
     ),
+]
+VALUES = [
+    msg
+    for msg in VALUES
+    if type(msg).get_type_name() not in EXCLUDED_SERVICE_MESSAGE_TYPES
 ]
 
 
@@ -221,6 +281,9 @@ def test_service_wrapper_request_response_links():
     assert GetTypeDescription.Response is GetTypeDescription_Response
 
 
+@pytest.mark.skipif(
+    DISTRO == Distro.HUMBLE, reason="service_msgs is not available in humble"
+)
 def test_service_event_info_from_ros_coerces_client_gid_to_bytes():
     ros_msg = idl.ServiceEventInfo.get_ros_type()()
     ros_msg.client_gid = np.arange(16, dtype=np.uint8)
@@ -265,6 +328,10 @@ def test_all_srvs_exposes_event_types():
     assert issubclass(GetTypeDescription_Event, idl.IdlStruct)
 
 
+@pytest.mark.skipif(
+    DISTRO == Distro.HUMBLE,
+    reason="type_description_interfaces is not available in humble",
+)
 def test_get_type_description_request_defaults_to_include_type_sources():
     request = GetTypeDescription_Request()
 

@@ -24,6 +24,7 @@ from typing import (
 
 import cyclonedds_idl as _idl
 
+from . import DISTRO, Distro
 from .utils.description import (
     cyclonedds_struct_to_ros_type_description_json,
     ros2_type_hash_from_json,
@@ -122,7 +123,40 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
         module_name, class_name = cls.get_type_name().replace("/", ".").rsplit(".", 1)
         mod = import_module(module_name)
-        return getattr(mod, class_name)
+        resolved_name = f"{module_name}.{class_name}"
+
+        try:
+            if DISTRO == Distro.HUMBLE:
+                if class_name.endswith("_Request"):
+                    service_name = class_name.removesuffix("_Request")
+                    resolved_name = f"{module_name}.{service_name}.Request"
+                    return getattr(mod, service_name).Request
+                if class_name.endswith("_Response"):
+                    service_name = class_name.removesuffix("_Response")
+                    resolved_name = f"{module_name}.{service_name}.Response"
+                    return getattr(mod, service_name).Response
+                if class_name.endswith("_Event"):
+                    service_name = class_name.removesuffix("_Event")
+                    resolved_name = f"{module_name}.{service_name}.Event"
+                    return getattr(mod, service_name).Event
+
+            return getattr(mod, class_name)
+        except AttributeError as exc:
+            raise AttributeError(
+                f"ROS equivalent for {cls.get_type_name()} does not seem to exist "
+                f"in this runtime (DISTRO={DISTRO.value}). Tried {resolved_name}."
+            ) from exc
+
+    @classmethod
+    def has_ros_type(cls) -> bool:
+        """
+        Check whether the matching ROS Python type is available in this runtime.
+        """
+        try:
+            cls.get_ros_type()
+        except (AttributeError, ImportError, ModuleNotFoundError):
+            return False
+        return True
 
     @classmethod
     def to_ros_type(cls) -> type:

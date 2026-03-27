@@ -3,6 +3,7 @@ from typing import ClassVar, Literal
 
 import numpy as np
 
+from .. import DISTRO, Distro
 from ..builtin_interfaces.msg import Time
 from ..geometry_msgs.msg import Point32, Quaternion, Transform, Twist, Vector3, Wrench
 from ..idl import IdlStruct, types
@@ -182,7 +183,7 @@ class NavSatStatus(IdlStruct, typename="sensor_msgs/msg/NavSatStatus"):
     SERVICE_GLONASS: ClassVar[Literal[2]] = 2
     SERVICE_COMPASS: ClassVar[Literal[4]] = 4
     SERVICE_GALILEO: ClassVar[Literal[8]] = 8
-    status: types.int8 = -2
+    status: types.int8 = 0 if DISTRO == Distro.HUMBLE else -2
     service: types.uint16 = 0
 
 
@@ -204,7 +205,6 @@ class PointField(IdlStruct, typename="sensor_msgs/msg/PointField"):
     datatype: types.uint8 = 0
     count: types.uint32 = 0
 
-
 @dataclass
 class Range(IdlStruct, typename="sensor_msgs/msg/Range"):
     ULTRASOUND: ClassVar[Literal[0]] = 0
@@ -216,6 +216,23 @@ class Range(IdlStruct, typename="sensor_msgs/msg/Range"):
     max_range: types.float32 = 0.0
     range: types.float32 = 0.0
     variance: types.float32 = 0.0
+
+
+if DISTRO == Distro.HUMBLE:
+    # overide for humble
+
+    @dataclass
+    class RangeHumble(IdlStruct, typename="sensor_msgs/msg/Range"):
+        ULTRASOUND: ClassVar[Literal[0]] = 0
+        INFRARED: ClassVar[Literal[1]] = 1
+        header: Header = field(default_factory=Header)
+        radiation_type: types.uint8 = 0
+        field_of_view: types.float32 = 0.0
+        min_range: types.float32 = 0.0
+        max_range: types.float32 = 0.0
+        range: types.float32 = 0.0
+
+    Range = RangeHumble # type: ignore
 
 
 @dataclass

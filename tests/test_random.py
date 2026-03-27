@@ -1,10 +1,12 @@
 import pytest
 from utils import TYPES, TYPES_IDS
 
-from ros2_pyterfaces import idl
+from ros2_pyterfaces import DISTRO, Distro, idl
 from ros2_pyterfaces.utils.random import random_message
 
 
+@pytest.mark.skipif(DISTRO==Distro.HUMBLE, 
+                    reason="service_msgs is not available in humble")
 def test_message_to_plain_data_normalizes_ros_message_with_annotation():
     idl_msg = idl.ServiceEventInfo(
         event_type=idl.ServiceEventInfo.REQUEST_RECEIVED,

@@ -11,7 +11,7 @@ import pytest
 import rclpy
 import rclpy._rclpy_pybind11 as _impl
 
-from ros2_pyterfaces import all_msgs, idl
+from ros2_pyterfaces import DISTRO, Distro, all_msgs, idl
 from ros2_pyterfaces.all_msgs import (
     DiagnosticStatus,
     JointState,
@@ -30,6 +30,7 @@ TYPES: List[Type[idl.IdlStruct]] = sorted(
         if inspect.isclass(obj)
         and issubclass(obj, idl.IdlStruct)
         and obj is not idl.IdlStruct
+        and obj.has_ros_type()
     },
     key=lambda cls: cls.__name__,
 )
@@ -70,6 +71,7 @@ def init():
 
 
 @pytest.mark.parametrize("my_type", TYPES)
+@pytest.mark.skipif(DISTRO==Distro.HUMBLE, reason="Humble does not have type hashes")
 async def test_hashes(my_type: Type[idl.IdlStruct], init):
     try:
         name, hash = get_name_hash(my_type)
