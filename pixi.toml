@@ -4,7 +4,7 @@ authors = ["Neppel Elian <elian.dev@posteo.com>"]
 channels = ["conda-forge", "https://prefix.dev/robostack-jazzy"]
 name = "dev"
 platforms = ["linux-64"]
-version = "0.1.1"
+version = "0.1.2"
 
 [pypi-dependencies]
 ros2_pyterfaces = {path = ".", editable = true}

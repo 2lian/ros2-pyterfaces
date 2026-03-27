@@ -14,6 +14,7 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 ## Table of Contents
 
 - [Install](#install)
+- [Reliability](#reliability)
 - [Example](#example)
   - [Message](#message)
   - [Service](#service)
@@ -27,6 +28,13 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 ```bash
 pip install ros2_pyterfaces
 ```
+
+## Reliability
+
+Each message type in this library is heavily tested, for a total of more than
+2000 tests, including randomized fuzz-style roundtrips through ROS 2. The goal
+is 100% interoperability: conversions, serialization, deserialization, hashes,
+and raw payload exchange are all exercised against ROS 2.
 
 ## Example
 
