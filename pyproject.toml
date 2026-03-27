@@ -54,3 +54,7 @@ include = ["ros2_pyterfaces", "ros2_pyterfaces.*"]
 
 [tool.setuptools.package-data]
 ros2_pyterfaces = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
