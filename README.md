@@ -1,5 +1,11 @@
 # ROS 2 PyTerfaces IDL
 
+
+
+| Requirements | Compatibility | Tests |
+|---|:---|:---:|
+| [![python](https://img.shields.io/pypi/pyversions/asyncio_for_robotics?logo=python&logoColor=white&label=Python&color=%20blue)](https://pypi.org/project/asyncio_for_robotics/) <br>[![mit](https://img.shields.io/badge/License-MIT-gold)](https://opensource.org/license/mit) | [![ros](https://img.shields.io/badge/ROS_2-Kilted-blue?logo=ros)](https://github.com/ros2) <br> [![ros](https://img.shields.io/badge/ROS_2-Jazzy-blue?logo=ros)](https://github.com/ros2) <br> [![ros](https://img.shields.io/badge/ROS_2-Humble-blue?logo=ros)](https://github.com/ros2) <br> | `Humble`, `Jazzy`, `Kilted` <br> `ubuntu`, `windows`<br> [![Tests](https://github.com/2lian/ros2-pyterfaces/actions/workflows/test.yml/badge.svg)](https://github.com/2lian/ros2-pyterfaces/actions/workflows/test.yml) |
+
 ROS 2 message and service definitions, metadata and serialization in Python.
 
 Create new message types, (de)serialize them, compute the RIHS01 hash, and
