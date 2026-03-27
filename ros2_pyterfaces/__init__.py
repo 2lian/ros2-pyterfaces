@@ -1,10 +1,9 @@
 import os
-from enum import Enum
-from functools import lru_cache
+from enum import StrEnum
 from importlib import util
 
 
-class Distro(str, Enum):
+class Distro(StrEnum):
     HUMBLE = "humble"
     JAZZY = "jazzy"
     KILTED = "kilted"
