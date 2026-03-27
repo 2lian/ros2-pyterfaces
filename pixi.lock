@@ -6129,8 +6129,8 @@ packages:
   timestamp: 1771181243372
 - pypi: ./
   name: ros2-pyterfaces
-  version: 0.1.0
-  sha256: 1481bf631479f8b4f49ce2dfa86a3ce41be0a4b467645c739cc6f85ddcc91321
+  version: 0.1.1
+  sha256: aa6b7deb62e09a314c9b6b4a77db8d95077ce403a4503818ea5bd0a9bf9bd22d
   requires_dist:
   - cyclonedds-idl
   - numpy

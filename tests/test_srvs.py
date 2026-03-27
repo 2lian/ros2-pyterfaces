@@ -2,6 +2,7 @@ import inspect
 import json
 from typing import List, Type, get_type_hints
 
+import numpy as np
 import pytest
 from rclpy.serialization import deserialize_message, serialize_message
 from utils import assert_msg_equal_as_lists, assert_strictly_eq
@@ -11,12 +12,12 @@ from ros2_pyterfaces.all_srvs import (
     AddDiagnostics,
     AddDiagnostics_Request,
     AddDiagnostics_Response,
+    GetInteractiveMarkers_Response,
+    GetPlan_Request,
     GetTypeDescription,
     GetTypeDescription_Event,
     GetTypeDescription_Request,
     GetTypeDescription_Response,
-    GetInteractiveMarkers_Response,
-    GetPlan_Request,
     LoadMap,
     LoadMap_Response,
     SelfTest_Response,
@@ -147,7 +148,7 @@ def test_service_messages_from_ros_defaults(msg_type: Type[idl.IdlStruct]):
     ros_msg_type = msg_type.get_ros_type()
     idl_msg = msg_type.from_ros(ros_msg_type())
 
-    assert_strictly_eq(idl_msg, msg_type())
+    assert idl.message_to_plain_data(idl_msg) == idl.message_to_plain_data(msg_type())
 
 
 @pytest.mark.parametrize("msg_type", REQUEST_RESPONSE_TYPES)
@@ -155,7 +156,9 @@ def test_service_deserialize(msg_type: Type[idl.IdlStruct]):
     ros_msg_type = msg_type.get_ros_type()
     idl_from_ros = msg_type.deserialize(serialize_message(ros_msg_type()))
 
-    assert_strictly_eq(idl_from_ros, msg_type())
+    assert idl.message_to_plain_data(idl_from_ros) == idl.message_to_plain_data(
+        msg_type()
+    )
 
 
 @pytest.mark.parametrize("msg_type", REQUEST_RESPONSE_TYPES)
@@ -171,14 +174,16 @@ def test_service_messages_to_from_ros_values(msg: idl.IdlStruct):
     ros_msg = msg.to_ros()
 
     assert isinstance(ros_msg, type(msg).get_ros_type())
-    assert_strictly_eq(type(msg).from_ros(ros_msg), msg)
+    assert idl.message_to_plain_data(
+        type(msg).from_ros(ros_msg)
+    ) == idl.message_to_plain_data(msg)
 
 
 @pytest.mark.parametrize("msg", VALUES)
 def test_service_deserialize_values(msg: idl.IdlStruct):
     idl_from_ros = type(msg).deserialize(serialize_message(msg.to_ros()))
 
-    assert_strictly_eq(idl_from_ros, msg)
+    assert idl.message_to_plain_data(idl_from_ros) == idl.message_to_plain_data(msg)
 
 
 @pytest.mark.parametrize("msg", VALUES)
@@ -186,8 +191,12 @@ def test_service_serialize_values(msg: idl.IdlStruct):
     ros_msg_type = msg.get_ros_type()
     ros_from_idl = deserialize_message(msg.serialize(), ros_msg_type)
 
-    assert_strictly_eq(type(msg).from_ros(ros_from_idl), msg)
-    assert_strictly_eq(type(msg).deserialize(serialize_message(ros_from_idl)), msg)
+    assert idl.message_to_plain_data(
+        type(msg).from_ros(ros_from_idl)
+    ) == idl.message_to_plain_data(msg)
+    assert idl.message_to_plain_data(
+        type(msg).deserialize(serialize_message(ros_from_idl))
+    ) == idl.message_to_plain_data(msg)
 
 
 def test_service_wrapper_request_response_links():
@@ -202,14 +211,28 @@ def test_service_wrapper_request_response_links():
     assert GetTypeDescription.Event is GetTypeDescription_Event
     assert setbool_hints["request_message"] is SetBool_Request
     assert setbool_hints["response_message"] is SetBool_Response
-    assert setbool_hints["event_message"].get_type_name() == "std_srvs/srv/SetBool_Event"
+    assert (
+        setbool_hints["event_message"].get_type_name() == "std_srvs/srv/SetBool_Event"
+    )
     assert load_map_hints["response_message"] is LoadMap_Response
     assert get_type_description_hints["request_message"] is GetTypeDescription_Request
-    assert (
-        get_type_description_hints["response_message"] is GetTypeDescription_Response
-    )
+    assert get_type_description_hints["response_message"] is GetTypeDescription_Response
     assert GetTypeDescription.Request is GetTypeDescription_Request
     assert GetTypeDescription.Response is GetTypeDescription_Response
+
+
+def test_service_event_info_from_ros_coerces_client_gid_to_bytes():
+    ros_msg = idl.ServiceEventInfo.get_ros_type()()
+    ros_msg.client_gid = np.arange(16, dtype=np.uint8)
+
+    idl_msg = idl.ServiceEventInfo.from_ros(ros_msg)
+
+    assert idl_msg.client_gid == bytes(range(16))
+    assert (
+        idl_msg.serialize()
+        == idl.ServiceEventInfo(client_gid=bytes(range(16))).serialize()
+    )
+    assert list(idl_msg.to_ros().client_gid) == list(range(16))
 
 
 def test_setbool_readme_service_usage():
@@ -230,8 +253,12 @@ def test_setbool_readme_service_usage():
     assert ros_srv_type is SetBool.get_ros_type()
     assert isinstance(ros_request, ros_srv_type.Request)
     assert isinstance(ros_response, ros_srv_type.Response)
-    assert_strictly_eq(request_again, some_request)
-    assert_strictly_eq(response_again, some_response)
+    assert idl.message_to_plain_data(request_again) == idl.message_to_plain_data(
+        some_request
+    )
+    assert idl.message_to_plain_data(response_again) == idl.message_to_plain_data(
+        some_response
+    )
 
 
 def test_all_srvs_exposes_event_types():
@@ -248,7 +275,8 @@ def test_get_type_description_request_defaults_to_include_type_sources():
 def test_trigger_request_type_description_uses_placeholder_member():
     type_description = json.loads(Trigger.json_type_description())
     referenced = {
-        desc["type_name"]: desc for desc in type_description["referenced_type_descriptions"]
+        desc["type_name"]: desc
+        for desc in type_description["referenced_type_descriptions"]
     }
     trigger_request = referenced["std_srvs/srv/Trigger_Request"]
 

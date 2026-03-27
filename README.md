@@ -17,6 +17,7 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 - [Example](#example)
   - [Message](#message)
   - [Service](#service)
+  - [Utilities](#utilities)
 - [Attribution](#attribution)
 - [Replicated ROS 2 Repos](#replicated-ros-2-repos)
   - [Included Interfaces](#included-interfaces)
@@ -104,6 +105,30 @@ response_again = SetBool.Response.from_ros(ros_response)
 > [!WARNING]
 > Not implemented yet:
 > - Actions
+
+### Utilities
+
+You can normalize messages to plain nested Python data for comparisons, tests,
+and snapshots:
+
+```python
+from ros2_pyterfaces import idl
+
+plain = idl.message_to_plain_data(my_msg)
+plain_ros = idl.message_to_plain_data(my_msg.to_ros(), type(my_msg))
+assert plain == plain_ros
+```
+
+There is also a deterministic random message generator for repeatable tests:
+
+```python
+from ros2_pyterfaces.geometry_msgs.msg import Vector3
+from ros2_pyterfaces.utils.random import random_message
+
+msg = random_message(Vector3)
+same_msg_again = random_message(Vector3)
+assert msg == same_msg_again
+```
 
 ## Attribution
 

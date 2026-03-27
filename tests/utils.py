@@ -1,17 +1,36 @@
 import array
+import inspect
 from dataclasses import fields, is_dataclass
-from typing import List, Mapping, Sequence, Tuple, Type
+from typing import List, Mapping, Sequence, Type
 
 import numpy as np
 
+from ros2_pyterfaces import all_msgs, idl
 from ros2_pyterfaces.idl import IdlStruct
+from ros2_pyterfaces.utils.random import random_message
+
+NOT_IN_ROS = [
+    "nav_msgs/msg/Trajectory",
+    "nav_msgs/msg/TrajectoryPoint",
+]
+TYPES: List[Type[idl.IdlStruct]] = sorted(
+    [
+        obj
+        for obj in vars(all_msgs).values()
+        if inspect.isclass(obj)
+        and issubclass(obj, idl.IdlStruct)
+        and obj is not idl.IdlStruct
+        and obj.get_type_name() not in NOT_IN_ROS
+    ],
+    key=lambda msg_type: msg_type.get_type_name(),
+)
+TYPES_IDS = [msg_type.get_type_name() for msg_type in TYPES]
+VALUES: List[idl.IdlStruct] = [random_message(msg_type) for msg_type in TYPES]
+VALUES_IDS = [msg.get_type_name() for msg in VALUES]
 
 
 def assert_strictly_eq(a: IdlStruct, b: IdlStruct):
-    try:
-        assert a == b
-    except:
-        assert_msg_equal_as_lists(a, b)
+    assert idl.message_to_plain_data(a) == idl.message_to_plain_data(b)
 
 
 IGNORED_FIELDS = {}

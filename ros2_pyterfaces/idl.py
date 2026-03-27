@@ -1,5 +1,6 @@
 import hashlib
 from dataclasses import dataclass, field, fields
+from collections.abc import Mapping as MappingABC
 from typing import (
     Any,
     ClassVar,
@@ -17,7 +18,6 @@ from typing import (
     TypeVar,
     cast,
     get_args,
-    get_origin,
     get_type_hints,
     overload,
 )
@@ -28,27 +28,18 @@ from .utils.description import (
     cyclonedds_struct_to_ros_type_description_json,
     ros2_type_hash_from_json,
 )
+from .utils.idl import (
+    IdlMetaIgnoreFinal,
+    coerce_byte_sequence,
+    coerce_uint8_sequence,
+    is_byte_sequence_annotation,
+    is_idl_struct_type,
+    is_uint8_sequence_annotation,
+    to_ros_byte_sequence,
+    unwrap_annotated,
+)
 
 types = _idl.types
-
-
-# derive from the same metaclass Cyclone already uses
-class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
-    def __new__(mcls, name, bases, namespace, **kwargs):
-        """
-        Create a class while stripping ``Final`` and ``Literal`` field annotations.
-        """
-        ann = namespace.get("__annotations__")
-        if ann:
-            # remove only from annotations; keep the class attributes themselves
-            for key in list(ann):
-                if get_origin(ann[key]) is ClassVar:
-                    ann.pop(key)
-                elif get_origin(ann[key]) is Literal:
-                    ann.pop(key)
-                elif get_origin(ann[key]) is Final:
-                    ann.pop(key)
-        return super().__new__(mcls, name, bases, namespace, **kwargs)
 
 
 class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
@@ -145,7 +136,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         Convert this IDL object to the matching ROS message.
         """
         ros_msg = type(self).get_ros_type()()
-        type_hints = get_type_hints(type(self))
+        type_hints = get_type_hints(type(self), include_extras=True)
 
         for f in fields(self):
             if not hasattr(ros_msg, f.name):
@@ -179,7 +170,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
                 f"got {type(msg).__module__}.{type(msg).__name__}"
             )
 
-        type_hints = get_type_hints(cls)
+        type_hints = get_type_hints(cls, include_extras=True)
         kwargs: dict[str, Any] = {}
 
         for f in fields(cls):
@@ -211,6 +202,13 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         """
         if value is None:
             return None
+
+        if is_uint8_sequence_annotation(dst_type):
+            return coerce_uint8_sequence(value)
+        if is_byte_sequence_annotation(dst_type):
+            return coerce_byte_sequence(value)
+
+        dst_type, _ = unwrap_annotated(dst_type)
 
         # Nested ROS message -> nested IdlStruct
         if isinstance(dst_type, type) and issubclass(dst_type, IdlStruct):
@@ -252,6 +250,10 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         if isinstance(value, IdlStruct):
             return value.to_ros()
 
+        if is_byte_sequence_annotation(src_type):
+            return to_ros_byte_sequence(value)
+
+        src_type, _ = unwrap_annotated(src_type)
         args = get_args(src_type) or getattr(src_type, "__args__", ())
         if (
             args
@@ -262,6 +264,11 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
             if isinstance(elem_type, type) and issubclass(elem_type, IdlStruct):
                 return [cls._to_ros_value(elem_type, item) for item in value]
             return value
+
+        if isinstance(value, (bytes, bytearray, memoryview)):
+            if isinstance(dst_value, bytes):
+                return bytes(value)
+            return list(value)
 
         if isinstance(dst_value, bytes):
             return bytes([int(value)])
@@ -287,6 +294,69 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         return value
 
 
+def message_to_plain_data(value: Any, annotation: Any | None = None) -> Any:
+    """
+    Convert an IDL struct or ROS message object into normalized plain data.
+
+    This is intended for value comparisons, tests, snapshots, and other cases
+    where a message should be represented as nested Python data structures
+    instead of ROS/IDL runtime objects. Structs and ROS messages become dicts,
+    generic sequences become lists, annotated ``uint8`` sequences keep the
+    library's canonical ``bytes`` representation, and annotated ``byte``
+    sequences normalize to ``list[int]`` when their annotation is available.
+
+    Args:
+        value: IDL struct, ROS message, or nested message field value.
+        annotation: Optional field or struct annotation used to preserve richer
+            normalization, especially for ROS-side ``uint8`` sequences.
+
+    Returns:
+        A normalized tree made of dicts, lists, scalars, and bytes.
+    """
+    if isinstance(value, IdlStruct):
+        field_annotations = get_type_hints(type(value), include_extras=True)
+        return {
+            field.name: message_to_plain_data(
+                getattr(value, field.name),
+                field_annotations.get(field.name, field.type),
+            )
+            for field in fields(value)
+        }
+
+    if is_uint8_sequence_annotation(annotation):
+        return coerce_uint8_sequence(value)
+    if is_byte_sequence_annotation(annotation):
+        return coerce_byte_sequence(value)
+
+    if hasattr(value, "get_fields_and_field_types"):
+        if is_idl_struct_type(annotation, IdlStruct):
+            struct_type, _ = unwrap_annotated(annotation)
+            field_annotations = get_type_hints(struct_type, include_extras=True)
+            return {
+                field_name: message_to_plain_data(
+                    getattr(value, field_name),
+                    field_annotations.get(field_name),
+                )
+                for field_name in value.get_fields_and_field_types().keys()
+            }
+
+        return {
+            field_name: message_to_plain_data(getattr(value, field_name))
+            for field_name in value.get_fields_and_field_types().keys()
+        }
+
+    if isinstance(value, MappingABC):
+        return {key: message_to_plain_data(item) for key, item in value.items()}
+
+    if hasattr(value, "tolist") and not isinstance(value, (str, bytes, bytearray)):
+        return message_to_plain_data(value.tolist(), annotation)
+
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [message_to_plain_data(item) for item in value]
+
+    return value
+
+
 @dataclass
 class DummyEmpty(IdlStruct, typename="does/not/matter/empty"):
     structure_needs_at_least_one_member: types.uint8 = 0
@@ -308,7 +378,7 @@ class ServiceEventInfo(IdlStruct, typename="service_msgs/msg/ServiceEventInfo"):
     event_type: types.uint8 = 0
     stamp: Time = field(default_factory=lambda *_: Time())
     client_gid: types.array[types.uint8, 16] = field(
-        default_factory=lambda *_: [0] * 16
+        default_factory=lambda: bytes(16)
     )
     sequence_number: types.int64 = 0
 
