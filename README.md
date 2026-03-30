@@ -32,8 +32,11 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 ## Install
 
 ```bash
-pip install ros2_pyterfaces
+pip install "ros2_pyterfaces[cyclone]"
 ```
+
+The functional schema helpers live in `ros2_pyterfaces.idl`. Serialization and
+the packaged Cyclone-backed interfaces live under `ros2_pyterfaces.cyclone`.
 
 > [!NOTE]
 > Some ROS distros have minor differences -- mainly `to_ros()` / `from_ros()`.
@@ -55,7 +58,7 @@ and raw payload exchange are all exercised against ROS 2.
 
 ```python
 from dataclasses import dataclass
-from ros2_pyterfaces.idl import IdlStruct, types
+from ros2_pyterfaces.cyclone.idl import IdlStruct, types
 
 @dataclass
 class Vector3(IdlStruct, typename="geometry_msgs/msg/Vector3"):
@@ -89,7 +92,7 @@ generates a matching event type for you.
 
 ```python
 from dataclasses import dataclass
-from ros2_pyterfaces import idl
+from ros2_pyterfaces.cyclone import idl
 
 # Same classes definition as Messages for *_Request *_Response
 @dataclass
@@ -133,7 +136,7 @@ You can normalize messages to plain nested Python data for comparisons, tests,
 and snapshots:
 
 ```python
-from ros2_pyterfaces import idl
+from ros2_pyterfaces.cyclone import idl
 
 plain = idl.message_to_plain_data(my_msg)
 plain_ros = idl.message_to_plain_data(my_msg.to_ros(), type(my_msg))
@@ -143,7 +146,7 @@ assert plain == plain_ros
 There is also a deterministic random message generator for repeatable tests:
 
 ```python
-from ros2_pyterfaces.geometry_msgs.msg import Vector3
+from ros2_pyterfaces.cyclone.geometry_msgs.msg import Vector3
 from ros2_pyterfaces.utils.random import random_message
 
 msg = random_message(Vector3)
@@ -164,23 +167,23 @@ dependent on (fantastic) Cyclone DDS Python's idl: https://github.com/eclipse-cy
 
 ## Included Interfaces
 
-- `ros2_pyterfaces.builtin_interfaces`: [msg.py](ros2_pyterfaces/builtin_interfaces/msg.py)
-- `ros2_pyterfaces.composition_interfaces`: [srv.py](ros2_pyterfaces/composition_interfaces/srv.py)
-- `ros2_pyterfaces.diagnostic_msgs`: [msg.py](ros2_pyterfaces/diagnostic_msgs/msg.py), [srv.py](ros2_pyterfaces/diagnostic_msgs/srv.py)
-- `ros2_pyterfaces.geometry_msgs`: [msg.py](ros2_pyterfaces/geometry_msgs/msg.py)
-- `ros2_pyterfaces.lifecycle_msgs`: [msg.py](ros2_pyterfaces/lifecycle_msgs/msg.py), [srv.py](ros2_pyterfaces/lifecycle_msgs/srv.py)
-- `ros2_pyterfaces.nav_msgs`: [msg.py](ros2_pyterfaces/nav_msgs/msg.py), [srv.py](ros2_pyterfaces/nav_msgs/srv.py)
-- `ros2_pyterfaces.rcl_interfaces`: [msg.py](ros2_pyterfaces/rcl_interfaces/msg.py), [srv.py](ros2_pyterfaces/rcl_interfaces/srv.py)
-- `ros2_pyterfaces.rosgraph_msgs`: [msg.py](ros2_pyterfaces/rosgraph_msgs/msg.py)
-- `ros2_pyterfaces.sensor_msgs`: [msg.py](ros2_pyterfaces/sensor_msgs/msg.py), [srv.py](ros2_pyterfaces/sensor_msgs/srv.py)
-- `ros2_pyterfaces.service_msgs`: [msg.py](ros2_pyterfaces/service_msgs/msg.py)
-- `ros2_pyterfaces.shape_msgs`: [msg.py](ros2_pyterfaces/shape_msgs/msg.py)
-- `ros2_pyterfaces.statistics_msgs`: [msg.py](ros2_pyterfaces/statistics_msgs/msg.py)
-- `ros2_pyterfaces.std_msgs`: [msg.py](ros2_pyterfaces/std_msgs/msg.py)
-- `ros2_pyterfaces.std_srvs`: [srv.py](ros2_pyterfaces/std_srvs/srv.py)
-- `ros2_pyterfaces.stereo_msgs`: [msg.py](ros2_pyterfaces/stereo_msgs/msg.py)
-- `ros2_pyterfaces.test_msgs`: [msg.py](ros2_pyterfaces/test_msgs/msg.py)
-- `ros2_pyterfaces.type_description_interfaces`: [msg.py](ros2_pyterfaces/type_description_interfaces/msg.py), [srv.py](ros2_pyterfaces/type_description_interfaces/srv.py)
-- `ros2_pyterfaces.trajectory_msgs`: [msg.py](ros2_pyterfaces/trajectory_msgs/msg.py)
-- `ros2_pyterfaces.unique_identifier_msgs`: [msg.py](ros2_pyterfaces/unique_identifier_msgs/msg.py)
-- `ros2_pyterfaces.visualization_msgs`: [msg.py](ros2_pyterfaces/visualization_msgs/msg.py), [srv.py](ros2_pyterfaces/visualization_msgs/srv.py)
+- `ros2_pyterfaces.cyclone.builtin_interfaces`: [msg.py](ros2_pyterfaces/cyclone/builtin_interfaces/msg.py)
+- `ros2_pyterfaces.cyclone.composition_interfaces`: [srv.py](ros2_pyterfaces/cyclone/composition_interfaces/srv.py)
+- `ros2_pyterfaces.cyclone.diagnostic_msgs`: [msg.py](ros2_pyterfaces/cyclone/diagnostic_msgs/msg.py), [srv.py](ros2_pyterfaces/cyclone/diagnostic_msgs/srv.py)
+- `ros2_pyterfaces.cyclone.geometry_msgs`: [msg.py](ros2_pyterfaces/cyclone/geometry_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.lifecycle_msgs`: [msg.py](ros2_pyterfaces/cyclone/lifecycle_msgs/msg.py), [srv.py](ros2_pyterfaces/cyclone/lifecycle_msgs/srv.py)
+- `ros2_pyterfaces.cyclone.nav_msgs`: [msg.py](ros2_pyterfaces/cyclone/nav_msgs/msg.py), [srv.py](ros2_pyterfaces/cyclone/nav_msgs/srv.py)
+- `ros2_pyterfaces.cyclone.rcl_interfaces`: [msg.py](ros2_pyterfaces/cyclone/rcl_interfaces/msg.py), [srv.py](ros2_pyterfaces/cyclone/rcl_interfaces/srv.py)
+- `ros2_pyterfaces.cyclone.rosgraph_msgs`: [msg.py](ros2_pyterfaces/cyclone/rosgraph_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.sensor_msgs`: [msg.py](ros2_pyterfaces/cyclone/sensor_msgs/msg.py), [srv.py](ros2_pyterfaces/cyclone/sensor_msgs/srv.py)
+- `ros2_pyterfaces.cyclone.service_msgs`: [msg.py](ros2_pyterfaces/cyclone/service_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.shape_msgs`: [msg.py](ros2_pyterfaces/cyclone/shape_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.statistics_msgs`: [msg.py](ros2_pyterfaces/cyclone/statistics_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.std_msgs`: [msg.py](ros2_pyterfaces/cyclone/std_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.std_srvs`: [srv.py](ros2_pyterfaces/cyclone/std_srvs/srv.py)
+- `ros2_pyterfaces.cyclone.stereo_msgs`: [msg.py](ros2_pyterfaces/cyclone/stereo_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.test_msgs`: [msg.py](ros2_pyterfaces/cyclone/test_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.type_description_interfaces`: [msg.py](ros2_pyterfaces/cyclone/type_description_interfaces/msg.py), [srv.py](ros2_pyterfaces/cyclone/type_description_interfaces/srv.py)
+- `ros2_pyterfaces.cyclone.trajectory_msgs`: [msg.py](ros2_pyterfaces/cyclone/trajectory_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.unique_identifier_msgs`: [msg.py](ros2_pyterfaces/cyclone/unique_identifier_msgs/msg.py)
+- `ros2_pyterfaces.cyclone.visualization_msgs`: [msg.py](ros2_pyterfaces/cyclone/visualization_msgs/msg.py), [srv.py](ros2_pyterfaces/cyclone/visualization_msgs/srv.py)

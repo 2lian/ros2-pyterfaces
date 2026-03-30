@@ -32,8 +32,12 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "cyclonedds_idl",
   "numpy",
+]
+
+[project.optional-dependencies]
+cyclone = [
+  "cyclonedds_idl",
 ]
 
 [project.urls]

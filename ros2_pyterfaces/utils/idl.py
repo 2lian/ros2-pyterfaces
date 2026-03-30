@@ -2,10 +2,18 @@
 Internal IDL runtime helpers.
 """
 
+import sys
 from collections.abc import Sequence
-from typing import Annotated, Any, ClassVar, Final, Literal, get_args, get_origin
-
-import cyclonedds_idl as _idl
+from typing import (
+    Annotated,
+    Any,
+    ClassVar,
+    Final,
+    Literal,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 
 def unwrap_annotated(tp: Any) -> tuple[Any, list[Any]]:
@@ -17,9 +25,100 @@ def unwrap_annotated(tp: Any) -> tuple[Any, list[Any]]:
     return tp, metadata
 
 
-def is_idl_struct_type(tp: Any, struct_base: type[Any]) -> bool:
+def is_ignored_field_annotation(annotation: Any) -> bool:
+    origin = get_origin(annotation)
+    return (
+        annotation is ClassVar
+        or annotation is Literal
+        or annotation is Final
+        or origin is ClassVar
+        or origin is Literal
+        or origin is Final
+    )
+
+
+def _annotation_namespace(schema_type: type[Any]) -> dict[str, Any]:
+    namespace: dict[str, Any] = {}
+    for base in reversed(schema_type.__mro__):
+        module = sys.modules.get(base.__module__)
+        if module is not None:
+            namespace.update(vars(module))
+    namespace.update(getattr(schema_type, "__dict__", {}))
+    return namespace
+
+
+def _resolve_annotation(annotation: Any, schema_type: type[Any]) -> Any:
+    if not isinstance(annotation, str):
+        return annotation
+
+    namespace = _annotation_namespace(schema_type)
+    try:
+        return eval(annotation, namespace, namespace)
+    except Exception:
+        return annotation
+
+
+def raw_message_field_annotations(schema_type: type[Any]) -> dict[str, Any]:
+    annotations: dict[str, Any] = {}
+    for base in reversed(schema_type.__mro__):
+        base_annotations = getattr(base, "__annotations__", None)
+        if not base_annotations:
+            continue
+        for field_name, field_type in base_annotations.items():
+            resolved_field_type = _resolve_annotation(field_type, base)
+            if is_ignored_field_annotation(resolved_field_type):
+                annotations.pop(field_name, None)
+                continue
+            annotations[field_name] = resolved_field_type
+    return annotations
+
+
+def message_field_annotations(
+    schema_type: type[Any], include_extras: bool = True
+) -> dict[str, Any]:
+    raw_annotations = raw_message_field_annotations(schema_type)
+    if not raw_annotations:
+        return {}
+
+    module_globals = _annotation_namespace(schema_type)
+    resolved_annotations = get_type_hints(
+        schema_type,
+        globalns=module_globals,
+        localns=module_globals,
+        include_extras=include_extras,
+    )
+    return {
+        field_name: resolved_annotations.get(field_name, field_type)
+        for field_name, field_type in raw_annotations.items()
+    }
+
+
+def message_field_names(schema_type: type[Any]) -> tuple[str, ...]:
+    return tuple(raw_message_field_annotations(schema_type).keys())
+
+
+def get_message_type_name(value_or_type: Any) -> str:
+    schema_type = value_or_type if isinstance(value_or_type, type) else type(value_or_type)
+    return getattr(schema_type, "__idl_typename__", "")
+
+
+def is_message_type(tp: Any, struct_base: type[Any] | None = None) -> bool:
     tp, _ = unwrap_annotated(tp)
-    return isinstance(tp, type) and issubclass(tp, struct_base)
+    if not isinstance(tp, type):
+        return False
+
+    if struct_base is not None:
+        try:
+            if issubclass(tp, struct_base):
+                return True
+        except TypeError:
+            pass
+
+    return bool(raw_message_field_annotations(tp)) or bool(get_message_type_name(tp))
+
+
+def is_idl_struct_type(tp: Any, struct_base: type[Any]) -> bool:
+    return is_message_type(tp, struct_base=struct_base)
 
 
 def is_uint8_sequence_annotation(annotation: Any | None) -> bool:
@@ -112,18 +211,14 @@ def _is_byte_like_type(tp: Any) -> bool:
     return base_type is int and "byte" in metadata
 
 
-class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
-    def __new__(mcls, name, bases, namespace, **kwargs):
-        """
-        Create a class while stripping ``Final`` and ``Literal`` field annotations.
-        """
-        ann = namespace.get("__annotations__")
-        if ann:
-            for key in list(ann):
-                if get_origin(ann[key]) is ClassVar:
-                    ann.pop(key)
-                elif get_origin(ann[key]) is Literal:
-                    ann.pop(key)
-                elif get_origin(ann[key]) is Final:
-                    ann.pop(key)
-        return super().__new__(mcls, name, bases, namespace, **kwargs)
+def strip_ignored_field_annotations(namespace: dict[str, Any]) -> None:
+    """
+    Remove annotations that should not be treated as schema fields.
+    """
+    annotations = namespace.get("__annotations__")
+    if not annotations:
+        return
+
+    for field_name in list(annotations):
+        if is_ignored_field_annotation(annotations[field_name]):
+            annotations.pop(field_name)

@@ -9,16 +9,19 @@ version = "0.1.2"
 [pypi-dependencies]
 ros2_pyterfaces = {path = ".", editable = true}
 asyncio-for-robotics = ">=1.3.5, <2"
+cydr = {path="./../debug/cdr/", editable=true}
+cyclonedds_idl = "*"
 
 [dependencies]
 python = ">=3.10.0,<3.14"
+msgspec = ">=0.20.0,<0.21"
 
 [feature.dev.dependencies]
 pytest = ">=9.0.2,<10"
 pytest-asyncio = ">=1.3.0,<2"
 zenohd = "*"
-pyright = ">=1.1.408,<2"
-glow-md = ">=2.1.1,<3"
+pyright = "*"
+glow-md = "*"
 
 [feature.humble]
 channels = ["https://prefix.dev/robostack-humble"]
@@ -57,7 +60,7 @@ ros-kilted-rmw-zenoh-cpp = "*"
 ros-kilted-turtlesim = "*"
 
 [environments]
-default = { features = ["jazzy", "dev"] }
+default = { features = ["dev"] }
 humble = { features = ["humble", "dev"] }
 jazzy = { features = ["jazzy", "dev"] }
 kilted = { features = ["kilted", "dev"] }

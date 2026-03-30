@@ -6,10 +6,10 @@ import hashlib
 import inspect
 import random
 import string
-from typing import Any, TypeVar, get_args, get_origin, get_type_hints
+from typing import Any, TypeVar, get_args, get_origin
 
 from .. import idl
-from .idl import unwrap_annotated
+from .idl import message_field_annotations, message_field_names, unwrap_annotated
 
 T = TypeVar("T", bound=idl.IdlStruct)
 __all__ = ["msg_seed", "random_message"]
@@ -64,11 +64,10 @@ def random_message(msg_type: type[T], seed: int | None = None) -> T:
 
 
 def _random_struct(msg_type: type[T], rng: random.Random) -> T:
+    type_hints = message_field_annotations(msg_type, include_extras=True)
     kwargs = {
-        field_name: _random_value(annotation, rng)
-        for field_name, annotation in get_type_hints(
-            msg_type, include_extras=True
-        ).items()
+        field_name: _random_value(type_hints[field_name], rng)
+        for field_name in message_field_names(msg_type)
     }
     return msg_type(**kwargs)
 
@@ -109,7 +108,9 @@ def _random_value(annotation: Any, rng: random.Random) -> Any:
     if origin is not None:
         args = get_args(base_type)
         if origin is list and args:
-            return [_random_value(args[0], rng) for _ in range(_random_length(rng, None))]
+            return [
+                _random_value(args[0], rng) for _ in range(_random_length(rng, None))
+            ]
 
     if inspect.isclass(base_type) and issubclass(base_type, idl.IdlStruct):
         return _random_struct(base_type, rng)
@@ -125,11 +126,13 @@ def _random_value(annotation: Any, rng: random.Random) -> Any:
 
 
 def _random_length(rng: random.Random, max_length: int | None) -> int:
-    upper = MAX_SEQUENCE_LEN if max_length is None else min(MAX_SEQUENCE_LEN, max_length)
+    upper = (
+        MAX_SEQUENCE_LEN if max_length is None else min(MAX_SEQUENCE_LEN, max_length)
+    )
     return rng.randint(1, upper)
 
 
-def _random_string(rng: random.Random, *, max_length: int | None = None) -> str:
+def _random_string(rng: random.Random, max_length: int | None = None) -> str:
     upper = MAX_STRING_LEN if max_length is None else min(MAX_STRING_LEN, max_length)
     size = rng.randint(1, upper)
     return "".join(rng.choice(STRING_ALPHABET) for _ in range(size))

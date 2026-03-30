@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
-import sys
 import typing as t
 from collections.abc import Mapping
-from typing import Any, Dict
+from typing import Any
 
-from cyclonedds_idl import IdlStruct, types  # I wanna delete this and depend on .idl
+from .idl import (
+    get_message_type_name,
+    is_message_type,
+    message_field_annotations,
+    message_field_names,
+    unwrap_annotated,
+)
 
 
 def ros2_type_hash_from_json(type_description_json: str) -> "hashlib._Hash":
@@ -107,21 +111,7 @@ _ARRAY_OFFSET = 48
 _BOUNDED_SEQUENCE_OFFSET = 96
 _UNBOUNDED_SEQUENCE_OFFSET = 144
 
-_CYCLONE_PRIMITIVE_TAG_TO_ROS = {
-    "int8": _ROS_SCALAR_TYPE_IDS["int8"],
-    "uint8": _ROS_SCALAR_TYPE_IDS["uint8"],
-    "int16": _ROS_SCALAR_TYPE_IDS["int16"],
-    "uint16": _ROS_SCALAR_TYPE_IDS["uint16"],
-    "int32": _ROS_SCALAR_TYPE_IDS["int32"],
-    "uint32": _ROS_SCALAR_TYPE_IDS["uint32"],
-    "int64": _ROS_SCALAR_TYPE_IDS["int64"],
-    "uint64": _ROS_SCALAR_TYPE_IDS["uint64"],
-    "float32": _ROS_SCALAR_TYPE_IDS["float32"],
-    "float64": _ROS_SCALAR_TYPE_IDS["float64"],
-    "char": _ROS_SCALAR_TYPE_IDS["char"],
-    "wchar": _ROS_SCALAR_TYPE_IDS["wchar"],
-    "byte": _ROS_SCALAR_TYPE_IDS["byte"],
-}
+_IDL_PRIMITIVE_TAG_TO_ROS = _ROS_SCALAR_TYPE_IDS
 
 
 def _placeholder_field() -> dict[str, Any]:
@@ -140,9 +130,8 @@ def _placeholder_field() -> dict[str, Any]:
     }
 
 
-def cyclonedds_struct_to_ros_type_description_json(
-    cls: type[IdlStruct],
-    *,
+def schema_to_ros_type_description_json(
+    cls: type[Any],
     root_type_name: str | None = None,
     type_name_overrides: Mapping[type, str] | None = None,
     indent: int = 2,
@@ -159,14 +148,14 @@ def cyclonedds_struct_to_ros_type_description_json(
     Returns:
         Type description JSON.
     """
-    if not isinstance(cls, type) or not issubclass(cls, IdlStruct):
-        raise TypeError("cls must be a cyclonedds.idl.IdlStruct subclass")
+    if not is_message_type(cls):
+        raise TypeError("cls must be an annotated schema class")
 
     types_map: Mapping[type, str] = (
         dict(type_name_overrides) if type_name_overrides is not None else dict()
     )
 
-    def resolve_ros_type_name(tp_cls: type, *, is_root: bool = False) -> str:
+    def resolve_ros_type_name(tp_cls: type, is_root: bool = False) -> str:
         nonlocal types_map, root_type_name
         if tp_cls in types_map:
             return types_map[tp_cls]
@@ -174,7 +163,7 @@ def cyclonedds_struct_to_ros_type_description_json(
         if is_root and root_type_name:
             return root_type_name
 
-        name = getattr(tp_cls, "__idl_typename__", None)
+        name = get_message_type_name(tp_cls)
         if isinstance(name, str) and "/" in name:
             return name
 
@@ -183,14 +172,6 @@ def cyclonedds_struct_to_ros_type_description_json(
             f"Pass root_type_name=... for the root class, and/or type_name_overrides={{ThatClass: 'pkg/msg/Name'}} "
             f"for nested classes."
         )
-
-    def unwrap_annotated(tp: t.Any) -> tuple[t.Any, list[t.Any]]:
-        metadata: list[t.Any] = []
-        while t.get_origin(tp) is t.Annotated:
-            args = t.get_args(tp)
-            tp = args[0]
-            metadata.extend(args[1:])
-        return tp, metadata
 
     def metadata_by_class_name(metadata: list[t.Any], class_name: str) -> t.Any | None:
         for item in metadata:
@@ -202,8 +183,8 @@ def cyclonedds_struct_to_ros_type_description_json(
         base: t.Any, metadata: list[t.Any]
     ) -> int | None:
         for item in metadata:
-            if isinstance(item, str) and item in _CYCLONE_PRIMITIVE_TAG_TO_ROS:
-                return _CYCLONE_PRIMITIVE_TAG_TO_ROS[item]
+            if isinstance(item, str) and item in _IDL_PRIMITIVE_TAG_TO_ROS:
+                return _IDL_PRIMITIVE_TAG_TO_ROS[item]
         if base is str:
             return _ROS_SCALAR_TYPE_IDS["string"]
         if base is bool:
@@ -283,7 +264,7 @@ def cyclonedds_struct_to_ros_type_description_json(
                 set(),
             )
 
-        if isinstance(base, type) and issubclass(base, IdlStruct):
+        if is_message_type(base):
             return (
                 {
                     "type_id": _ROS_SCALAR_TYPE_IDS["nested"],
@@ -298,28 +279,19 @@ def cyclonedds_struct_to_ros_type_description_json(
 
     seen: dict[type, dict[str, t.Any]] = {}
 
-    def build_individual_type(
-        tp_cls: type[IdlStruct], *, is_root: bool = False
-    ) -> None:
+    def build_individual_type(tp_cls: type[Any], is_root: bool = False) -> None:
         if tp_cls in seen:
             return
 
-        module_globals = vars(sys.modules[tp_cls.__module__])
-
-        hints = t.get_type_hints(
-            tp_cls,
-            globalns=module_globals,
-            localns=module_globals,
-            include_extras=True,
-        )
-        raw_annotations = getattr(tp_cls, "__annotations__", {})
+        hints = message_field_annotations(tp_cls, include_extras=True)
+        raw_field_names = message_field_names(tp_cls)
         field_annotations = getattr(tp_cls, "__idl_field_annotations__", {})
 
         referenced: set[type] = set()
         fields: list[dict[str, t.Any]] = []
 
-        for py_field_name in raw_annotations:
-            field_tp = hints.get(py_field_name, raw_annotations[py_field_name])
+        for py_field_name in raw_field_names:
+            field_tp = hints[py_field_name]
             field_type, refs = field_type_from_annotation(field_tp)
             referenced |= refs
 
@@ -357,3 +329,6 @@ def cyclonedds_struct_to_ros_type_description_json(
         "referenced_type_descriptions": referenced,
     }
     return json.dumps(out, indent=indent)
+
+
+cyclonedds_struct_to_ros_type_description_json = schema_to_ros_type_description_json
