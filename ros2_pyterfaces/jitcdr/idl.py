@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar, Literal, Mapping, Self, cast
+from typing import Any, ClassVar, Literal, Mapping, Optional, Self, cast
 
 from cydr import idl, structs
+from cydr.idl import StringCollectionMode
 
 from ..idl import IdlStruct as CoreStruct
 from ..utils.idl import message_field_names
@@ -103,7 +104,7 @@ class JitStruct(structs.XcdrStruct, CoreStruct):
     def deserialize(
         cls,
         data: object,
-        string_collections: Literal["numpy"] | Literal["list"] = "numpy",
+        string_collections: Optional[StringCollectionMode] = None,
     ) -> Self:
         cls._ensure_runtime_supported()
         if len(message_field_names(cls)) == 0:
