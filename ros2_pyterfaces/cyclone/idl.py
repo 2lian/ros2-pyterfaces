@@ -44,8 +44,8 @@ class IdlStruct(core_idl.IdlStruct, _idl.IdlStruct, metaclass=IdlMetaIgnoreFinal
         endianness: _idl.Endianness | None = None,
         use_version_2: bool | None = None,
     ) -> bytes:
-        if len(message_field_names(type(self))) == 0:
-            return DummyEmpty().serialize(buffer, endianness, use_version_2)
+        # if len(message_field_names(type(self))) == 0:
+        #     return DummyEmpty().serialize(buffer, endianness, use_version_2)
         return super().serialize(buffer, endianness, use_version_2)
 
 

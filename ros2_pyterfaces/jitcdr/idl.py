@@ -13,16 +13,7 @@ class JitStruct(structs.XcdrStruct, CoreStruct):
     __unsupported_reason__: ClassVar[str | None] = None
 
     @classmethod
-    def _ensure_runtime_supported(cls) -> None:
-        reason = getattr(cls, "__unsupported_reason__", None)
-        if reason:
-            raise NotImplementedError(
-                f"{cls.__module__}.{cls.__qualname__} is not implemented for jitcdr: {reason}"
-            )
-
-    @classmethod
     def _core_type(cls) -> type[CoreStruct]:
-        cls._ensure_runtime_supported()
         from .converter import to_core_struct
 
         return cast(type[CoreStruct], to_core_struct(cls))
@@ -69,14 +60,12 @@ class JitStruct(structs.XcdrStruct, CoreStruct):
         return cls._core_type().to_ros_type()
 
     def to_ros(self) -> object:
-        type(self)._ensure_runtime_supported()
         from .converter import to_core_struct
 
         return cast(CoreStruct, to_core_struct(self)).to_ros()
 
     @classmethod
     def from_ros(cls, msg: object) -> Self:
-        cls._ensure_runtime_supported()
         from .converter import from_core_struct
 
         core_value = cls._core_type().from_ros(msg)
@@ -84,7 +73,6 @@ class JitStruct(structs.XcdrStruct, CoreStruct):
 
     @classmethod
     def _from_ros_value(cls, dst_type: Any, value: Any) -> Any:
-        cls._ensure_runtime_supported()
         from .converter import core_value_to_jit_value, jit_annotation_to_core_annotation
 
         core_annotation = jit_annotation_to_core_annotation(dst_type)
@@ -93,7 +81,6 @@ class JitStruct(structs.XcdrStruct, CoreStruct):
 
     @classmethod
     def _to_ros_value(cls, src_type: Any, value: Any, dst_value: Any = None) -> Any:
-        cls._ensure_runtime_supported()
         from .converter import jit_annotation_to_core_annotation, jit_value_to_core_value
 
         core_annotation = jit_annotation_to_core_annotation(src_type)
@@ -106,16 +93,14 @@ class JitStruct(structs.XcdrStruct, CoreStruct):
         data: object,
         string_collections: Optional[StringCollectionMode] = None,
     ) -> Self:
-        cls._ensure_runtime_supported()
-        if len(message_field_names(cls)) == 0:
-            DummyEmpty.deserialize(data, string_collections=string_collections)
-            return cast(Self, cls())
-        return cast(Self, super().deserialize(data, string_collections=string_collections))
+        # if len(message_field_names(cls)) == 0:
+        #     DummyEmpty.deserialize(data, string_collections=string_collections)
+        #     return cast(Self, cls())
+        return super().deserialize(data, string_collections=string_collections)
 
     def serialize(self) -> bytearray:
-        type(self)._ensure_runtime_supported()
-        if len(message_field_names(type(self))) == 0:
-            return DummyEmpty().serialize()
+        # if len(message_field_names(type(self))) == 0:
+        #     return DummyEmpty().serialize()
         return super().serialize()
 
 
