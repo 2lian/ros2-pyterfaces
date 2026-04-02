@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass, field
 from functools import partial
 from importlib import import_module
-from typing import Any, cast, get_args
+from typing import Annotated, Any, cast, get_args, get_origin, get_type_hints
 
 import numpy as np
 from cydr import idl as jit_idl
@@ -16,12 +16,6 @@ from cydr.schema_types import (
 
 from ..idl import IdlStruct as CoreStructBase
 from ..idl_types import types as core_types
-from ..utils.idl import (
-    is_byte_sequence_annotation,
-    is_uint8_sequence_annotation,
-    message_field_annotations,
-    unwrap_annotated,
-)
 from .idl import JitStruct
 
 CoreStruct = CoreStructBase
@@ -93,6 +87,60 @@ _JIT_NDARRAY_ELEMENT_TO_CORE: dict[str, Any] = {
     "Float64": core_types.float64,
     "Bytes": str,
 }
+
+
+def unwrap_annotated(annotation: Any) -> tuple[Any, tuple[Any, ...]]:
+    metadata: list[Any] = []
+    base = annotation
+    while get_origin(base) is Annotated:
+        args = get_args(base)
+        if not args:
+            break
+        base = args[0]
+        metadata.extend(args[1:])
+    return base, tuple(metadata)
+
+
+def message_field_annotations(cls: type, include_extras: bool = False) -> dict[str, Any]:
+    try:
+        annotations = get_type_hints(cls, include_extras=include_extras)
+    except Exception:
+        raw = getattr(cls, "__annotations__", None)
+        return dict(raw) if isinstance(raw, dict) else {}
+
+    return {
+        field_name: annotation
+        for field_name, annotation in annotations.items()
+        if not field_name.startswith("__")
+    }
+
+
+def _sequence_subtype(annotation: Any) -> Any | None:
+    base, _ = unwrap_annotated(annotation)
+    args = get_args(base) or getattr(base, "__args__", ())
+    if args:
+        return args[0]
+    subtype = getattr(base, "subtype", None)
+    if subtype is not None:
+        return subtype
+    return None
+
+
+def is_uint8_sequence_annotation(annotation: Any) -> bool:
+    subtype = _sequence_subtype(annotation)
+    return subtype in {
+        core_types.uint8,
+        jit_idl.uint8,
+    }
+
+
+def is_byte_sequence_annotation(annotation: Any) -> bool:
+    subtype = _sequence_subtype(annotation)
+    return subtype in {
+        core_types.byte,
+        jit_idl.byte,
+        bytes,
+    }
 
 
 def to_core_struct(struct: type[JitStruct] | JitStruct) -> type[CoreStruct] | CoreStruct:

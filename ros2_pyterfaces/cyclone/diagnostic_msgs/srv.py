@@ -36,7 +36,7 @@ AddDiagnostics: idl.IdlServiceType[
 ] = idl.make_idl_service(
     AddDiagnostics_Request,
     AddDiagnostics_Response,
-    event_type=AddDiagnostics_Event,
+    _event_type=AddDiagnostics_Event,
 )
 
 
@@ -66,6 +66,6 @@ SelfTest: idl.IdlServiceType[SelfTest_Request, SelfTest_Response, SelfTest_Event
     idl.make_idl_service(
         SelfTest_Request,
         SelfTest_Response,
-        event_type=SelfTest_Event,
+        _event_type=SelfTest_Event,
     )
 )

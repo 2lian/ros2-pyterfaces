@@ -47,6 +47,3 @@ def _looks_like_humble() -> bool:
 
 
 DISTRO = _detect_distro()
-
-
-__all__ = ["DISTRO", "Distro"]

@@ -44,5 +44,5 @@ GetTypeDescription: idl.IdlServiceType[
 ] = idl.make_idl_service(
     GetTypeDescription_Request,
     GetTypeDescription_Response,
-    event_type=GetTypeDescription_Event,
+    _event_type=GetTypeDescription_Event,
 )

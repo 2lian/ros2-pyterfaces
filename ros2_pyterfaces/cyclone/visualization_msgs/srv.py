@@ -40,5 +40,5 @@ GetInteractiveMarkers: idl.IdlServiceType[
 ] = idl.make_idl_service(
     GetInteractiveMarkers_Request,
     GetInteractiveMarkers_Response,
-    event_type=GetInteractiveMarkers_Event,
+    _event_type=GetInteractiveMarkers_Event,
 )

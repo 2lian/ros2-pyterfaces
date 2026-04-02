@@ -1,5 +1,5 @@
-import json
 import hashlib
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Type, TypeAlias
 
@@ -19,7 +19,7 @@ Primitives: TypeAlias = Literal[
     "uint64",
     "float32",
     "float64",
-    "string", # only unbounded for now
+    "string",  # only unbounded for now
 ]
 
 
@@ -38,9 +38,10 @@ class Array:
     subtype: Primitives | "CoreSchema"
     length: int
 
+
 Entry: TypeAlias = Primitives | Sequence | Array | BoundedString
 
-CoreSchema :TypeAlias = Dict[str, Entry | "CoreSchema"]
+CoreSchema: TypeAlias = Dict[str, Entry | "CoreSchema"]
 
 # core shema examples:
 
@@ -68,7 +69,7 @@ JointState = {
 # core type message example:
 
 
-JointState = {
+joint_state_msg = {
     "__typename": "sensor_msgs/msg/JointState",
     "header": {
         "__typename": "std_msgs/msg/Header",
@@ -87,6 +88,7 @@ JointState = {
 
 # needed functions:
 
+
 def json_style_type_description(core_descrption: CoreSchema) -> Dict[str, Any]:
     """Return the ros type description in a json style dict.
 
@@ -98,7 +100,8 @@ def json_style_type_description(core_descrption: CoreSchema) -> Dict[str, Any]:
     """
     ...
 
-def json_type_description(...) -> str:
+
+def json_type_description(something) -> str:
     """TODO"""
     json.dumps(json_style_type_description(...))
 
@@ -109,11 +112,13 @@ def _hash_rihs01_raw(schema: CoreSchema) -> "hashlib._Hash":
     """
     ...
 
+
 def hash_rihs01(schema: CoreSchema) -> str:
     """
     Compute the RIHS01 hash string for a schema class.
     """
     return f"RIHS01_{_hash_rihs01_raw(schema).hexdigest()}"
+
 
 def ros2_type_hash_from_json(type_description_json: str) -> "hashlib._Hash":
     """
@@ -183,11 +188,71 @@ def ros2_type_hash_from_json(type_description_json: str) -> "hashlib._Hash":
 
     return hashlib.sha256(hashable_repr.encode("utf-8"))
 
-def to_ros_type(schema:CoreSchema) -> Type:
+
+def to_ros_type(schema: CoreSchema) -> Type:
     """
     Resolve the matching ROS type for a schema class.
     """
 
-def from_ros_type(Any) -> CoreSchema:
-    """Not needed"""
-    return NotImplemented
+
+def from_ros(schema: CoreSchema, ros_msg: Any) -> Dict[str, Any]:
+    """Creates a core message representation from a schema and ros message.
+
+    Args:
+        schema:
+        ros_msg:
+
+    Returns:
+
+    """
+    ...
+
+
+def to_ros(core_msg: Dict[str, Any]) -> Dict[str, Any]:
+    """Creates a ROS message from a core message.
+
+    Args:
+        schema:
+        ros_msg:
+
+    Returns:
+
+    """
+    ...
+
+
+# example of how setbool schema is structured:
+
+SetBool_Request = {
+    "__typename": "std_srvs/srv/SetBool_Request",  # always with _Request for ros
+    "data": "bool",
+}
+
+SetBool_Response = {
+    "__typename": "std_srvs/srv/SetBool_Response",  # always with _Request for ros
+    "success": "bool",
+    "message": "string",
+}
+
+SetBool_Event = {
+    "__typename": "std_srvs/srv/SetBool_Event",  # always with _Event for ros
+    "info": ServiceEventInfo,  # TODO
+    "request": SetBool_Request,
+    "response": SetBool_Response,
+}
+
+
+SetBool = {
+    "__typename": "std_srvs/srv/SetBool",
+    "request_message": SetBool_Request,
+    "response_message": SetBool_Response,
+    "event_message": SetBool_Event,
+}
+
+# what to do for services:
+
+def make_srv_schema(request: CoreSchema, response: CoreSchema, typename:str |None= None) -> CoreSchema:
+    """TODO"""
+    # Should return setbool given the req and res above
+
+# all the functions above should work with a srv schema also, make sure that is the case. if not consult with me.

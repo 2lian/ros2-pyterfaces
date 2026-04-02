@@ -28,7 +28,7 @@ Empty: idl.IdlServiceType[Empty_Request, Empty_Response, Empty_Event] = (
     idl.make_idl_service(
         Empty_Request,
         Empty_Response,
-        event_type=Empty_Event,
+        _event_type=Empty_Event,
     )
 )
 
@@ -58,7 +58,7 @@ SetBool: idl.IdlServiceType[SetBool_Request, SetBool_Response, SetBool_Event] = 
     idl.make_idl_service(
         SetBool_Request,
         SetBool_Response,
-        event_type=SetBool_Event,
+        _event_type=SetBool_Event,
     )
 )
 
@@ -87,6 +87,6 @@ Trigger: idl.IdlServiceType[Trigger_Request, Trigger_Response, Trigger_Event] = 
     idl.make_idl_service(
         Trigger_Request,
         Trigger_Response,
-        event_type=Trigger_Event,
+        _event_type=Trigger_Event,
     )
 )

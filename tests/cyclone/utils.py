@@ -1,15 +1,11 @@
-import array
 import inspect
-from dataclasses import fields, is_dataclass
-from typing import List, Mapping, Sequence, Type
-
-import numpy as np
+from collections.abc import Mapping
+from typing import Any
 
 from ros2_pyterfaces import DISTRO, Distro
-from ros2_pyterfaces.cyclone import idl
+from ros2_pyterfaces import core
 from ros2_pyterfaces.cyclone import all_msgs
 from ros2_pyterfaces.cyclone.idl import IdlStruct
-from ros2_pyterfaces.utils.random import random_message
 
 NOT_IN_ROS = [
     "nav_msgs/msg/Trajectory",
@@ -26,77 +22,38 @@ NOT_IN_HUMBLE = {
     "type_description_interfaces/msg/TypeDescription",
     "type_description_interfaces/msg/TypeSource",
 }
+
 EXCLUDED_MESSAGE_TYPES = set(NOT_IN_ROS)
 if DISTRO == Distro.HUMBLE:
     EXCLUDED_MESSAGE_TYPES.update(NOT_IN_HUMBLE)
 
-TYPES: List[Type[idl.IdlStruct]] = sorted(
-    [
-        obj
-        for obj in vars(all_msgs).values()
-        if inspect.isclass(obj)
-        and issubclass(obj, idl.IdlStruct)
-        and obj is not idl.IdlStruct
-        and obj.get_type_name() not in EXCLUDED_MESSAGE_TYPES
-    ],
-    key=lambda msg_type: msg_type.get_type_name(),
-)
-TYPES_IDS = [msg_type.get_type_name() for msg_type in TYPES]
-VALUES: List[idl.IdlStruct] = [random_message(msg_type) for msg_type in TYPES]
-VALUES_IDS = [msg.get_type_name() for msg in VALUES]
+
+def _is_message_type(value: Any) -> bool:
+    return inspect.isclass(value) and issubclass(value, IdlStruct) and value is not IdlStruct
 
 
-def assert_strictly_eq(a: IdlStruct, b: IdlStruct):
-    assert idl.message_to_plain_data(a) == idl.message_to_plain_data(b)
+def _collect_unique_message_types(namespace: Mapping[str, Any]) -> list[type[IdlStruct]]:
+    by_typename: dict[str, type[IdlStruct]] = {}
+    for value in namespace.values():
+        if not _is_message_type(value):
+            continue
+        msg_type = value
+        type_name = msg_type.get_type_name()
+        if "/msg/" not in type_name:
+            continue
+        if type_name in EXCLUDED_MESSAGE_TYPES:
+            continue
+        by_typename.setdefault(type_name, msg_type)
+    return [by_typename[type_name] for type_name in sorted(by_typename)]
 
 
-IGNORED_FIELDS = {}
+def random_message_for_type(msg_type: type[IdlStruct], seed: int | None = None) -> IdlStruct:
+    core_schema = msg_type.to_core_schema()
+    core_msg = core.random_message(core_schema, seed=seed)
+    return msg_type._from_core_message_dict(core_msg)
 
 
-def assert_msg_equal_as_lists(left, right) -> None:
-    left_norm = _normalize(left)
-    right_norm = _normalize(right)
-    assert left_norm == right_norm
-
-
-def _normalize(obj):
-    # Dataclass -> dict
-    if is_dataclass(obj) and not isinstance(obj, type):
-        return {
-            f.name: _normalize(getattr(obj, f.name))
-            for f in fields(obj)
-            if f.name not in IGNORED_FIELDS
-        }
-
-    # ROS message object -> dict of fields
-    getter = getattr(type(obj), "get_fields_and_field_types", None)
-    if callable(getter):
-        return {
-            name: _normalize(getattr(obj, name))
-            for name in getter().keys()
-            if name not in IGNORED_FIELDS
-        }
-
-    # Mapping -> dict
-    if isinstance(obj, Mapping):
-        return {k: _normalize(v) for k, v in obj.items()}
-
-    # numpy array -> list
-    if isinstance(obj, np.ndarray):
-        return _normalize(obj.tolist())
-
-    # array.array -> list
-    if isinstance(obj, array.array):
-        return [_normalize(x) for x in obj.tolist()]
-
-    # bytes-like -> list[int]
-    if isinstance(obj, (bytes, bytearray, memoryview)):
-        return [_normalize(x) for x in obj]
-
-    # generic sequence -> list
-    if isinstance(obj, Sequence) and not isinstance(
-        obj, (str, bytes, bytearray, memoryview)
-    ):
-        return [_normalize(x) for x in obj]
-
-    return obj
+MESSAGE_TYPES: list[type[IdlStruct]] = _collect_unique_message_types(vars(all_msgs))
+MESSAGE_TYPE_IDS: list[str] = [msg_type.get_type_name() for msg_type in MESSAGE_TYPES]
+MESSAGE_VALUES: list[IdlStruct] = [random_message_for_type(msg_type) for msg_type in MESSAGE_TYPES]
+MESSAGE_VALUE_IDS: list[str] = [type(msg).get_type_name() for msg in MESSAGE_VALUES]

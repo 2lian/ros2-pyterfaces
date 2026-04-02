@@ -6,7 +6,6 @@ from cydr import idl, structs
 from cydr.idl import StringCollectionMode
 
 from ..idl import IdlStruct as CoreStruct
-from ..utils.idl import message_field_names
 
 
 class JitStruct(structs.XcdrStruct, CoreStruct):

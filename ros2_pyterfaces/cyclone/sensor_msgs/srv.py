@@ -36,5 +36,5 @@ SetCameraInfo: idl.IdlServiceType[
 ] = idl.make_idl_service(
     SetCameraInfo_Request,
     SetCameraInfo_Response,
-    event_type=SetCameraInfo_Event,
+    _event_type=SetCameraInfo_Event,
 )

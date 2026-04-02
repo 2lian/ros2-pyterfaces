@@ -30,7 +30,7 @@ GetMap: idl.IdlServiceType[GetMap_Request, GetMap_Response, GetMap_Event] = (
     idl.make_idl_service(
         GetMap_Request,
         GetMap_Response,
-        event_type=GetMap_Event,
+        _event_type=GetMap_Event,
     )
 )
 
@@ -61,7 +61,7 @@ GetPlan: idl.IdlServiceType[GetPlan_Request, GetPlan_Response, GetPlan_Event] = 
     idl.make_idl_service(
         GetPlan_Request,
         GetPlan_Response,
-        event_type=GetPlan_Event,
+        _event_type=GetPlan_Event,
     )
 )
 
@@ -96,7 +96,7 @@ LoadMap: idl.IdlServiceType[LoadMap_Request, LoadMap_Response, LoadMap_Event] = 
     idl.make_idl_service(
         LoadMap_Request,
         LoadMap_Response,
-        event_type=LoadMap_Event,
+        _event_type=LoadMap_Event,
     )
 )
 
@@ -128,6 +128,6 @@ SetMap: idl.IdlServiceType[SetMap_Request, SetMap_Response, SetMap_Event] = (
     idl.make_idl_service(
         SetMap_Request,
         SetMap_Response,
-        event_type=SetMap_Event,
+        _event_type=SetMap_Event,
     )
 )
