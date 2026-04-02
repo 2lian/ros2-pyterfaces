@@ -1,7 +1,6 @@
 from collections.abc import Mapping as MappingABC
 from collections.abc import Sequence as SequenceABC
-from dataclasses import dataclass, field, fields, is_dataclass
-from importlib import import_module
+from dataclasses import dataclass, field, fields
 from typing import (
     Annotated,
     Any,
@@ -66,61 +65,18 @@ def _strip_ignored_annotations(namespace: dict[str, Any]) -> None:
     }
 
 
-def _safe_type_hints(cls: type, include_extras: bool = True) -> dict[str, Any]:
-    try:
-        return get_type_hints(cls, include_extras=include_extras)
-    except Exception:
-        raw = getattr(cls, "__annotations__", None)
-        if isinstance(raw, dict):
-            return dict(raw)
-        return {}
-
-
-def _field_names(cls: type) -> list[str]:
-    if is_dataclass(cls):
-        return [f.name for f in fields(cls)]
-
-    struct_fields = getattr(cls, "__struct_fields__", None)
-    if isinstance(struct_fields, tuple | list):
-        return [name for name in struct_fields if isinstance(name, str)]
-
-    raw = getattr(cls, "__annotations__", None)
-    if isinstance(raw, dict):
-        return [name for name in raw if not name.startswith("__")]
-    return []
-
-
 def _field_annotations(cls: type) -> dict[str, Any]:
-    hints = _safe_type_hints(cls, include_extras=True)
-    raw = getattr(cls, "__annotations__", None)
-    if not isinstance(raw, dict):
-        raw = {}
+    hints = get_type_hints(cls, include_extras=True)
     annotations: dict[str, Any] = {}
 
-    for name in _field_names(cls):
-        annotation = hints.get(name, raw.get(name, Any))
+    for dataclass_field in fields(cls):
+        name = dataclass_field.name
+        annotation = hints[name]
         if _is_ignored_annotation(annotation):
             continue
         annotations[name] = annotation
 
     return annotations
-
-
-def _core_schema_from_registry(type_name: str) -> CoreSchema | None:
-    parts = type_name.split("/", 2)
-    if len(parts) != 3:
-        return None
-
-    package, interface_kind, schema_name = parts
-    try:
-        module = import_module(f"ros2_pyterfaces.core.{package}.{interface_kind}")
-    except ModuleNotFoundError:
-        return None
-
-    schema = getattr(module, schema_name, None)
-    if isinstance(schema, dict):
-        return cast(CoreSchema, schema)
-    return None
 
 
 def _primitive_from_base(base: Any) -> Primitive:
@@ -133,6 +89,16 @@ def _primitive_from_base(base: Any) -> Primitive:
     if base is int:
         return "int64"
     raise TypeError(f"Unsupported primitive annotation base: {base!r}")
+
+
+def _primitive_from_annotation(annotation: Any) -> Primitive:
+    base, metadata = _unwrap_annotated(annotation)
+    for meta in metadata:
+        if isinstance(meta, str) and meta in PRIMITIVES:
+            return cast(Primitive, meta)
+    if isinstance(base, type):
+        return _primitive_from_base(base)
+    raise TypeError(f"Unsupported primitive annotation: {annotation!r}")
 
 
 def _sequence_subtype(annotation: Any) -> Any | None:
@@ -220,7 +186,7 @@ def _value_from_core(annotation: Any, value: Any) -> Any:
 
     if isinstance(base, type) and issubclass(base, IdlStruct):
         if isinstance(value, MappingABC):
-            return base._from_core_message_dict(cast(Mapping[str, Any], value))
+            return base.from_core_message(cast(Mapping[str, Any], value))
         return value
 
     subtype = _sequence_subtype(annotation)
@@ -237,18 +203,78 @@ def _value_from_core(annotation: Any, value: Any) -> Any:
                 )
         return [_value_from_core(subtype, item) for item in items]
 
-    if base is bool:
+    primitive = _primitive_from_annotation(annotation)
+    if primitive == "bool":
         return bool(value)
-    if base is int:
-        return int(value)
-    if base is float:
+    if primitive in {"float32", "float64"}:
         return float(value)
-    if base is str:
+    if primitive == "string":
         if isinstance(value, (bytes, bytearray, memoryview)):
             return bytes(value).decode("utf-8")
         return str(value)
+    if primitive == "byte":
+        if isinstance(value, (bytes, bytearray, memoryview)):
+            raw = bytes(value)
+            if len(raw) != 1:
+                raise TypeError(
+                    f"Expected single-byte value for {annotation!r}, got {value!r}"
+                )
+            return raw[0]
+        return int(value)
+    if primitive in {"char", "uint8", "int8"} and isinstance(
+        value, (bytes, bytearray, memoryview)
+    ):
+        raw = bytes(value)
+        if len(raw) == 1:
+            return raw[0]
+        return list(raw)
+    return int(value)
 
     return value
+
+
+def _value_to_core(annotation: Any, value: Any) -> Any:
+    if value is None:
+        return None
+
+    base, _ = _unwrap_annotated(annotation)
+
+    if isinstance(base, type) and issubclass(base, IdlStruct):
+        return value.to_core_message()
+
+    subtype = _sequence_subtype(annotation)
+    if subtype is not None:
+        return [_value_to_core(subtype, item) for item in value]
+
+    primitive = _primitive_from_annotation(annotation)
+    if primitive == "bool":
+        return bool(value)
+    if primitive in {"float32", "float64"}:
+        return float(value)
+    if primitive == "string":
+        if isinstance(value, (bytes, bytearray, memoryview)):
+            return bytes(value).decode("utf-8")
+        return str(value)
+    if primitive == "byte":
+        if isinstance(value, (bytes, bytearray, memoryview)):
+            raw = bytes(value)
+            if len(raw) == 1:
+                return raw
+            raise TypeError(
+                f"Expected single-byte value for {annotation!r}, got {value!r}"
+            )
+        as_int = int(value)
+        if as_int < 0 or as_int > 255:
+            raise ValueError(f"Byte value out of range: {as_int}")
+        return bytes([as_int])
+    if primitive in {"char", "uint8", "int8"} and isinstance(
+        value, (bytes, bytearray, memoryview)
+    ):
+        raw = bytes(value)
+        if len(raw) == 1:
+            return raw[0]
+        return list(raw)
+    return int(value)
 
 
 class IdlMetaIgnoreFinal(type(_idl.IdlStruct)):
@@ -268,7 +294,11 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         super().__init_subclass__(**kwargs)
         if typename is not None:
             cls.__idl_typename__ = typename
-        cls.__is_empty_message__ = len(_field_names(cls)) == 0
+        raw_annotations = getattr(cls, "__annotations__", None)
+        if isinstance(raw_annotations, dict):
+            cls.__is_empty_message__ = len(raw_annotations) == 0
+        else:
+            cls.__is_empty_message__ = True
 
     def serialize(
         self,
@@ -313,13 +343,10 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     @classmethod
     def to_core_schema(cls) -> CoreSchema:
-        registered = _core_schema_from_registry(cls.get_type_name())
-        if registered is not None:
-            return registered
-
         schema: CoreSchema = {TYPENAME_KEY: cls.get_type_name()}
         annotations = _field_annotations(cls)
-        for name in _field_names(cls):
+        for dataclass_field in fields(cls):
+            name = dataclass_field.name
             schema[name] = _schema_entry_from_annotation(annotations[name])
         return schema
 
@@ -328,16 +355,20 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         return cls.to_core_schema()
 
     def to_core_message(self) -> dict[str, Any]:
-        return core.from_ros(type(self).to_core_schema(), self)
-
-    def from_core_message(self) -> dict[str, Any]:
-        return self.to_core_message()
+        cls = type(self)
+        annotations = _field_annotations(cls)
+        message: dict[str, Any] = {TYPENAME_KEY: cls.get_type_name()}
+        for dataclass_field in fields(cls):
+            name = dataclass_field.name
+            message[name] = _value_to_core(annotations[name], getattr(self, name))
+        return message
 
     @classmethod
-    def _from_core_message_dict(cls, core_msg: Mapping[str, Any]) -> Self:
+    def from_core_message(cls, core_msg: Mapping[str, Any]) -> Self:
         annotations = _field_annotations(cls)
         kwargs: dict[str, Any] = {}
-        for name in _field_names(cls):
+        for dataclass_field in fields(cls):
+            name = dataclass_field.name
             if name not in core_msg:
                 continue
             kwargs[name] = _value_from_core(annotations[name], core_msg[name])
@@ -387,7 +418,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
     @classmethod
     def from_ros(cls, msg: object) -> Self:
         core_msg = core.from_ros(cls.to_core_schema(), msg)
-        return cls._from_core_message_dict(core_msg)
+        return cls.from_core_message(core_msg)
 
 
 @dataclass

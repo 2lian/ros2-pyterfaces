@@ -79,6 +79,8 @@ def _random_entry(entry: SchemaEntry, rng: random.Random) -> Any:
         return numerator / 8.0
     if entry == "string":
         return _random_string(rng)
+    if entry in {"byte"}:
+        return rng.randint(0, 255).to_bytes()
     if entry in _INTEGER_BOUNDS:
         lower, upper = _INTEGER_BOUNDS[entry]
         return rng.randint(lower, upper)

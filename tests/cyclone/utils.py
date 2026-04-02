@@ -4,7 +4,7 @@ from typing import Any
 
 from ros2_pyterfaces import DISTRO, Distro
 from ros2_pyterfaces import core
-from ros2_pyterfaces.cyclone import all_msgs
+from ros2_pyterfaces.cyclone import all_msgs, all_srvs
 from ros2_pyterfaces.cyclone.idl import IdlStruct
 
 NOT_IN_ROS = [
@@ -26,6 +26,56 @@ NOT_IN_HUMBLE = {
 EXCLUDED_MESSAGE_TYPES = set(NOT_IN_ROS)
 if DISTRO == Distro.HUMBLE:
     EXCLUDED_MESSAGE_TYPES.update(NOT_IN_HUMBLE)
+
+NOT_IN_ROS_SERVICE_TYPES: set[str] = set()
+NOT_IN_HUMBLE_SERVICE_TYPES = {
+    "rcl_interfaces/srv/GetLoggerLevels",
+    "rcl_interfaces/srv/SetLoggerLevels",
+    "type_description_interfaces/srv/GetTypeDescription",
+}
+EXCLUDED_SERVICE_TYPES = set(NOT_IN_ROS_SERVICE_TYPES)
+if DISTRO == Distro.HUMBLE:
+    EXCLUDED_SERVICE_TYPES.update(NOT_IN_HUMBLE_SERVICE_TYPES)
+
+NOT_IN_ROS_SERVICE_MESSAGE_TYPES: set[str] = set()
+NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES = {
+    "composition_interfaces/srv/ListNodes_Event",
+    "composition_interfaces/srv/LoadNode_Event",
+    "composition_interfaces/srv/UnloadNode_Event",
+    "diagnostic_msgs/srv/AddDiagnostics_Event",
+    "diagnostic_msgs/srv/SelfTest_Event",
+    "lifecycle_msgs/srv/ChangeState_Event",
+    "lifecycle_msgs/srv/GetAvailableStates_Event",
+    "lifecycle_msgs/srv/GetAvailableTransitions_Event",
+    "lifecycle_msgs/srv/GetState_Event",
+    "nav_msgs/srv/GetMap_Event",
+    "nav_msgs/srv/GetPlan_Event",
+    "nav_msgs/srv/LoadMap_Event",
+    "nav_msgs/srv/SetMap_Event",
+    "rcl_interfaces/srv/DescribeParameters_Event",
+    "rcl_interfaces/srv/GetLoggerLevels_Event",
+    "rcl_interfaces/srv/GetLoggerLevels_Request",
+    "rcl_interfaces/srv/GetLoggerLevels_Response",
+    "rcl_interfaces/srv/GetParameterTypes_Event",
+    "rcl_interfaces/srv/GetParameters_Event",
+    "rcl_interfaces/srv/ListParameters_Event",
+    "rcl_interfaces/srv/SetLoggerLevels_Event",
+    "rcl_interfaces/srv/SetLoggerLevels_Request",
+    "rcl_interfaces/srv/SetLoggerLevels_Response",
+    "rcl_interfaces/srv/SetParametersAtomically_Event",
+    "rcl_interfaces/srv/SetParameters_Event",
+    "sensor_msgs/srv/SetCameraInfo_Event",
+    "std_srvs/srv/Empty_Event",
+    "std_srvs/srv/SetBool_Event",
+    "std_srvs/srv/Trigger_Event",
+    "type_description_interfaces/srv/GetTypeDescription_Event",
+    "type_description_interfaces/srv/GetTypeDescription_Request",
+    "type_description_interfaces/srv/GetTypeDescription_Response",
+    "visualization_msgs/srv/GetInteractiveMarkers_Event",
+}
+EXCLUDED_SERVICE_MESSAGE_TYPES = set(NOT_IN_ROS_SERVICE_MESSAGE_TYPES)
+if DISTRO == Distro.HUMBLE:
+    EXCLUDED_SERVICE_MESSAGE_TYPES.update(NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES)
 
 
 def _is_message_type(value: Any) -> bool:
@@ -50,10 +100,76 @@ def _collect_unique_message_types(namespace: Mapping[str, Any]) -> list[type[Idl
 def random_message_for_type(msg_type: type[IdlStruct], seed: int | None = None) -> IdlStruct:
     core_schema = msg_type.to_core_schema()
     core_msg = core.random_message(core_schema, seed=seed)
-    return msg_type._from_core_message_dict(core_msg)
+    return msg_type.from_core_message(core_msg)
+
+
+def _is_service_type(value: Any) -> bool:
+    return (
+        hasattr(value, "get_type_name")
+        and hasattr(value, "Request")
+        and hasattr(value, "Response")
+        and hasattr(value, "Event")
+    )
+
+
+def _collect_unique_service_types(namespace: Mapping[str, Any]) -> list[type[Any]]:
+    by_typename: dict[str, type[Any]] = {}
+    for value in namespace.values():
+        if not _is_service_type(value):
+            continue
+        service_type = value
+        type_name = service_type.get_type_name()
+        if "/srv/" not in type_name:
+            continue
+        if type_name.endswith("_Request") or type_name.endswith("_Response") or type_name.endswith("_Event"):
+            continue
+        if type_name in EXCLUDED_SERVICE_TYPES:
+            continue
+        by_typename.setdefault(type_name, service_type)
+    return [by_typename[type_name] for type_name in sorted(by_typename)]
+
+
+def _collect_unique_service_message_types(
+    namespace: Mapping[str, Any],
+) -> list[type[IdlStruct]]:
+    by_typename: dict[str, type[IdlStruct]] = {}
+    for value in namespace.values():
+        if not _is_message_type(value):
+            continue
+        service_msg_type = value
+        type_name = service_msg_type.get_type_name()
+        if "/srv/" not in type_name:
+            continue
+        if not (
+            type_name.endswith("_Request")
+            or type_name.endswith("_Response")
+            or type_name.endswith("_Event")
+        ):
+            continue
+        if type_name in EXCLUDED_SERVICE_MESSAGE_TYPES:
+            continue
+        by_typename.setdefault(type_name, service_msg_type)
+    return [by_typename[type_name] for type_name in sorted(by_typename)]
 
 
 MESSAGE_TYPES: list[type[IdlStruct]] = _collect_unique_message_types(vars(all_msgs))
 MESSAGE_TYPE_IDS: list[str] = [msg_type.get_type_name() for msg_type in MESSAGE_TYPES]
 MESSAGE_VALUES: list[IdlStruct] = [random_message_for_type(msg_type) for msg_type in MESSAGE_TYPES]
 MESSAGE_VALUE_IDS: list[str] = [type(msg).get_type_name() for msg in MESSAGE_VALUES]
+
+SERVICE_TYPES: list[type[Any]] = _collect_unique_service_types(vars(all_srvs))
+SERVICE_TYPE_IDS: list[str] = [service_type.get_type_name() for service_type in SERVICE_TYPES]
+
+SERVICE_MESSAGE_TYPES: list[type[IdlStruct]] = _collect_unique_service_message_types(
+    vars(all_srvs)
+)
+SERVICE_MESSAGE_TYPE_IDS: list[str] = [
+    service_msg_type.get_type_name() for service_msg_type in SERVICE_MESSAGE_TYPES
+]
+SERVICE_MESSAGE_VALUES: list[IdlStruct] = [
+    service_msg_type()
+    for service_msg_type in SERVICE_MESSAGE_TYPES
+]
+SERVICE_MESSAGE_VALUE_IDS: list[str] = [
+    type(msg).get_type_name() for msg in SERVICE_MESSAGE_VALUES
+]

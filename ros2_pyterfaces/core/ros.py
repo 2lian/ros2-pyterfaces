@@ -154,6 +154,8 @@ def _from_ros_value(entry: SchemaEntry, value: Any) -> Any:
     if isinstance(value, (bytes, bytearray, memoryview)):
         if entry == "string":
             return bytes(value).decode("utf-8")
+        if entry in {"byte"} and len(bytes(value)) == 1:
+            return value
         if entry in {"byte", "char", "uint8", "int8"} and len(bytes(value)) == 1:
             return bytes(value)[0]
         return list(bytes(value))
@@ -185,6 +187,9 @@ def _to_ros_value(value: Any, destination_value: Any = None) -> Any:
         if _is_sequence_like(destination_value):
             return [nested]
         return nested
+
+    if isinstance(value, int) and isinstance(destination_value, bytes):
+        return bytes([value])
 
     if isinstance(value, list):
         return [_to_ros_value(item) for item in value]
