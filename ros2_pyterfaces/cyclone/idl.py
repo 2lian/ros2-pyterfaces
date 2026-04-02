@@ -1,4 +1,3 @@
-from collections.abc import Mapping as MappingABC
 from collections.abc import Sequence as SequenceABC
 from dataclasses import dataclass, field, fields
 from typing import (
@@ -117,6 +116,14 @@ def _sequence_subtype(annotation: Any) -> Any | None:
     return None
 
 
+def _is_byte_sequence_annotation(annotation: Any) -> bool:
+    subtype = _sequence_subtype(annotation)
+    if subtype is None:
+        return False
+    _, metadata = _unwrap_annotated(subtype)
+    return "byte" in metadata
+
+
 def _schema_entry_from_annotation(annotation: Any) -> SchemaEntry:
     base, metadata = _unwrap_annotated(annotation)
 
@@ -154,30 +161,6 @@ def _schema_entry_from_annotation(annotation: Any) -> SchemaEntry:
     raise TypeError(f"Unsupported annotation: {annotation!r}")
 
 
-def _sequence_items(value: Any) -> list[Any] | None:
-    if isinstance(value, (str, bytes, bytearray, memoryview, MappingABC)):
-        return None
-
-    if isinstance(value, SequenceABC):
-        return list(value)
-
-    tolist = getattr(value, "tolist", None)
-    if callable(tolist):
-        converted = tolist()
-        if isinstance(converted, list):
-            return converted
-        if isinstance(converted, tuple):
-            return list(converted)
-
-    if hasattr(value, "__iter__") and hasattr(value, "__len__"):
-        try:
-            return list(value)
-        except TypeError:
-            return None
-
-    return None
-
-
 def _value_from_core(annotation: Any, value: Any) -> Any:
     if value is None:
         return None
@@ -185,23 +168,13 @@ def _value_from_core(annotation: Any, value: Any) -> Any:
     base, _ = _unwrap_annotated(annotation)
 
     if isinstance(base, type) and issubclass(base, IdlStruct):
-        if isinstance(value, MappingABC):
-            return base.from_core_message(cast(Mapping[str, Any], value))
-        return value
+        return base.from_core_message(cast(Mapping[str, Any], value))
 
     subtype = _sequence_subtype(annotation)
     if subtype is not None:
-        items = _sequence_items(value)
-        if items is None:
-            if isinstance(value, (bytes, bytearray, memoryview)):
-                items = list(bytes(value))
-            elif isinstance(value, MappingABC):
-                items = [value]
-            else:
-                raise TypeError(
-                    f"Expected sequence value for {annotation!r}, got {value!r}"
-                )
-        return [_value_from_core(subtype, item) for item in items]
+        if _is_byte_sequence_annotation(annotation):
+            return bytes(value)
+        return [_value_from_core(subtype, item) for item in value]
 
     primitive = _primitive_from_annotation(annotation)
     if primitive == "bool":
@@ -214,12 +187,7 @@ def _value_from_core(annotation: Any, value: Any) -> Any:
         return str(value)
     if primitive == "byte":
         if isinstance(value, (bytes, bytearray, memoryview)):
-            raw = bytes(value)
-            if len(raw) != 1:
-                raise TypeError(
-                    f"Expected single-byte value for {annotation!r}, got {value!r}"
-                )
-            return raw[0]
+            return bytes(value)[0]
         return int(value)
     if primitive in {"char", "uint8", "int8"} and isinstance(
         value, (bytes, bytearray, memoryview)
@@ -229,8 +197,6 @@ def _value_from_core(annotation: Any, value: Any) -> Any:
             return raw[0]
         return list(raw)
     return int(value)
-
-    return value
 
 
 def _value_to_core(annotation: Any, value: Any) -> Any:
@@ -244,6 +210,8 @@ def _value_to_core(annotation: Any, value: Any) -> Any:
 
     subtype = _sequence_subtype(annotation)
     if subtype is not None:
+        if _is_byte_sequence_annotation(annotation):
+            return bytes(value)
         return [_value_to_core(subtype, item) for item in value]
 
     primitive = _primitive_from_annotation(annotation)
@@ -257,16 +225,8 @@ def _value_to_core(annotation: Any, value: Any) -> Any:
         return str(value)
     if primitive == "byte":
         if isinstance(value, (bytes, bytearray, memoryview)):
-            raw = bytes(value)
-            if len(raw) == 1:
-                return raw
-            raise TypeError(
-                f"Expected single-byte value for {annotation!r}, got {value!r}"
-            )
-        as_int = int(value)
-        if as_int < 0 or as_int > 255:
-            raise ValueError(f"Byte value out of range: {as_int}")
-        return bytes([as_int])
+            return bytes(value)
+        return bytes([int(value)])
     if primitive in {"char", "uint8", "int8"} and isinstance(
         value, (bytes, bytearray, memoryview)
     ):

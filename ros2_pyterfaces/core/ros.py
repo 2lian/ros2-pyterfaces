@@ -122,12 +122,40 @@ def _from_ros_value(entry: SchemaEntry, value: Any) -> Any:
         return from_ros(entry, value)
 
     if isinstance(entry, Sequence):
+        if entry.subtype == "byte":
+            if isinstance(value, (bytes, bytearray, memoryview)):
+                return bytes(value)
+            items = _sequence_items(value)
+            if items is None:
+                raise TypeError(
+                    f"Expected a sequence value for {entry!r}, got {value!r}"
+                )
+            return bytes(
+                bytes(item)[0]
+                if isinstance(item, (bytes, bytearray, memoryview))
+                else int(item)
+                for item in items
+            )
         items = _sequence_items(value)
         if items is None:
             raise TypeError(f"Expected a sequence value for {entry!r}, got {value!r}")
         return [_from_ros_value(entry.subtype, item) for item in items]
 
     if isinstance(entry, Array):
+        if entry.subtype == "byte":
+            if isinstance(value, (bytes, bytearray, memoryview)):
+                return bytes(value)
+            items = _sequence_items(value)
+            if items is None:
+                raise TypeError(
+                    f"Expected a sequence value for {entry!r}, got {value!r}"
+                )
+            return bytes(
+                bytes(item)[0]
+                if isinstance(item, (bytes, bytearray, memoryview))
+                else int(item)
+                for item in items
+            )
         items = _sequence_items(value)
         if items is None:
             if isinstance(value, (bytes, bytearray, memoryview)):
@@ -155,7 +183,7 @@ def _from_ros_value(entry: SchemaEntry, value: Any) -> Any:
         if entry == "string":
             return bytes(value).decode("utf-8")
         if entry in {"byte"} and len(bytes(value)) == 1:
-            return value
+            return bytes(value)
         if entry in {"byte", "char", "uint8", "int8"} and len(bytes(value)) == 1:
             return bytes(value)[0]
         return list(bytes(value))
@@ -166,6 +194,8 @@ def _from_ros_value(entry: SchemaEntry, value: Any) -> Any:
         return float(value)
     if entry == "string":
         return str(value)
+    if entry == "byte":
+        return bytes([int(value)])
     return int(value)
 
 

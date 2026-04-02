@@ -59,9 +59,13 @@ def _random_entry(entry: SchemaEntry, rng: random.Random) -> Any:
 
     if isinstance(entry, Sequence):
         size = _random_length(rng, entry.max_length)
+        if entry.subtype == "byte":
+            return bytes(rng.getrandbits(8) for _ in range(size))
         return [_random_entry(entry.subtype, rng) for _ in range(size)]
 
     if isinstance(entry, Array):
+        if entry.subtype == "byte":
+            return bytes(rng.getrandbits(8) for _ in range(entry.length))
         return [_random_entry(entry.subtype, rng) for _ in range(entry.length)]
 
     if isinstance(entry, BoundedString):
@@ -80,7 +84,7 @@ def _random_entry(entry: SchemaEntry, rng: random.Random) -> Any:
     if entry == "string":
         return _random_string(rng)
     if entry in {"byte"}:
-        return rng.randint(0, 255).to_bytes()
+        return bytes([rng.randint(0, 255)])
     if entry in _INTEGER_BOUNDS:
         lower, upper = _INTEGER_BOUNDS[entry]
         return rng.randint(lower, upper)
