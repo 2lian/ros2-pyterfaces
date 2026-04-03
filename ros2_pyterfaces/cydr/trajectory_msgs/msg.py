@@ -6,12 +6,12 @@ import msgspec
 import numpy as np
 from cydr import types
 
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..builtin_interfaces.msg import Duration
 from ..geometry_msgs.msg import Transform, Twist
 from ..std_msgs.msg import Header
 
-class JointTrajectoryPoint(JitStruct):
+class JointTrajectoryPoint(IdlStruct):
     __idl_typename__ = 'trajectory_msgs/msg/JointTrajectoryPoint'
     positions: types.NDArray[Any, types.Float64] = msgspec.field(default_factory=lambda: np.empty(0, dtype=np.float64))
     velocities: types.NDArray[Any, types.Float64] = msgspec.field(default_factory=lambda: np.empty(0, dtype=np.float64))
@@ -19,17 +19,17 @@ class JointTrajectoryPoint(JitStruct):
     effort: types.NDArray[Any, types.Float64] = msgspec.field(default_factory=lambda: np.empty(0, dtype=np.float64))
     time_from_start: Duration = msgspec.field(default_factory=Duration)
 
-class MultiDOFJointTrajectoryPoint(JitStruct):
+class MultiDOFJointTrajectoryPoint(IdlStruct):
     __idl_typename__ = 'trajectory_msgs/msg/MultiDOFJointTrajectoryPoint'
     __unsupported_reason__ = 'transforms is a collection of messages, which cydr does not support'
     pass
 
-class JointTrajectory(JitStruct):
+class JointTrajectory(IdlStruct):
     __idl_typename__ = 'trajectory_msgs/msg/JointTrajectory'
     __unsupported_reason__ = 'points is a collection of messages, which cydr does not support'
     pass
 
-class MultiDOFJointTrajectory(JitStruct):
+class MultiDOFJointTrajectory(IdlStruct):
     __idl_typename__ = 'trajectory_msgs/msg/MultiDOFJointTrajectory'
     __unsupported_reason__ = 'points is a collection of messages, which cydr does not support'
     pass

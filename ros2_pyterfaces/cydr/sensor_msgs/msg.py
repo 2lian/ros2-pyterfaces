@@ -8,11 +8,11 @@ from cydr import types
 
 from ..builtin_interfaces.msg import Time
 from ..geometry_msgs.msg import Point32, Quaternion, Transform, Twist, Vector3, Wrench
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..std_msgs.msg import Header
 
 
-class BatteryState(JitStruct):
+class BatteryState(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/BatteryState"
     header: Header = msgspec.field(default_factory=Header)
     voltage: types.float32 = np.float32(0.0)
@@ -36,7 +36,7 @@ class BatteryState(JitStruct):
     serial_number: types.string = b""
 
 
-class ChannelFloat32(JitStruct):
+class ChannelFloat32(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/ChannelFloat32"
     name: types.string = b""
     values: types.NDArray[Any, types.Float32] = msgspec.field(
@@ -44,7 +44,7 @@ class ChannelFloat32(JitStruct):
     )
 
 
-class CompressedImage(JitStruct):
+class CompressedImage(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/CompressedImage"
     header: Header = msgspec.field(default_factory=Header)
     format: types.string = b""
@@ -53,21 +53,21 @@ class CompressedImage(JitStruct):
     )
 
 
-class FluidPressure(JitStruct):
+class FluidPressure(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/FluidPressure"
     header: Header = msgspec.field(default_factory=Header)
     fluid_pressure: types.float64 = np.float64(0.0)
     variance: types.float64 = np.float64(0.0)
 
 
-class Illuminance(JitStruct):
+class Illuminance(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/Illuminance"
     header: Header = msgspec.field(default_factory=Header)
     illuminance: types.float64 = np.float64(0.0)
     variance: types.float64 = np.float64(0.0)
 
 
-class Image(JitStruct):
+class Image(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/Image"
     header: Header = msgspec.field(default_factory=Header)
     height: types.uint32 = np.uint32(0)
@@ -80,7 +80,7 @@ class Image(JitStruct):
     )
 
 
-class Imu(JitStruct):
+class Imu(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/Imu"
     header: Header = msgspec.field(default_factory=Header)
     orientation: Quaternion = msgspec.field(default_factory=Quaternion)
@@ -109,7 +109,7 @@ class Imu(JitStruct):
     )
 
 
-class JointState(JitStruct):
+class JointState(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/JointState"
     header: Header = msgspec.field(default_factory=Header)
     name: types.NDArray[Any, types.Bytes] = msgspec.field(
@@ -126,7 +126,7 @@ class JointState(JitStruct):
     )
 
 
-class Joy(JitStruct):
+class Joy(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/Joy"
     header: Header = msgspec.field(default_factory=Header)
     axes: types.NDArray[Any, types.Float32] = msgspec.field(
@@ -137,21 +137,21 @@ class Joy(JitStruct):
     )
 
 
-class JoyFeedback(JitStruct):
+class JoyFeedback(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/JoyFeedback"
     type: types.uint8 = np.uint8(0)
     id: types.uint8 = np.uint8(0)
     intensity: types.float32 = np.float32(0.0)
 
 
-class LaserEcho(JitStruct):
+class LaserEcho(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/LaserEcho"
     echoes: types.NDArray[Any, types.Float32] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.float32)
     )
 
 
-class LaserScan(JitStruct):
+class LaserScan(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/LaserScan"
     header: Header = msgspec.field(default_factory=Header)
     angle_min: types.float32 = np.float32(0.0)
@@ -169,7 +169,7 @@ class LaserScan(JitStruct):
     )
 
 
-class MagneticField(JitStruct):
+class MagneticField(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/MagneticField"
     header: Header = msgspec.field(default_factory=Header)
     magnetic_field: Vector3 = msgspec.field(default_factory=Vector3)
@@ -182,7 +182,7 @@ class MagneticField(JitStruct):
     )
 
 
-class MultiDOFJointState(JitStruct):
+class MultiDOFJointState(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/MultiDOFJointState"
     __unsupported_reason__ = (
         "transforms is a collection of messages, which cydr does not support"
@@ -190,13 +190,13 @@ class MultiDOFJointState(JitStruct):
     pass
 
 
-class NavSatStatus(JitStruct):
+class NavSatStatus(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/NavSatStatus"
     status: types.int8 = np.int8(-2)
     service: types.uint16 = np.uint16(0)
 
 
-class PointField(JitStruct):
+class PointField(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/PointField"
     name: types.string = b""
     offset: types.uint32 = np.uint32(0)
@@ -204,7 +204,7 @@ class PointField(JitStruct):
     count: types.uint32 = np.uint32(0)
 
 
-class Range(JitStruct):
+class Range(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/Range"
     header: Header = msgspec.field(default_factory=Header)
     radiation_type: types.uint8 = np.uint8(0)
@@ -215,7 +215,7 @@ class Range(JitStruct):
     variance: types.float32 = np.float32(0.0)
 
 
-class RegionOfInterest(JitStruct):
+class RegionOfInterest(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/RegionOfInterest"
     x_offset: types.uint32 = np.uint32(0)
     y_offset: types.uint32 = np.uint32(0)
@@ -224,28 +224,28 @@ class RegionOfInterest(JitStruct):
     do_rectify: types.boolean = False
 
 
-class RelativeHumidity(JitStruct):
+class RelativeHumidity(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/RelativeHumidity"
     header: Header = msgspec.field(default_factory=Header)
     relative_humidity: types.float64 = np.float64(0.0)
     variance: types.float64 = np.float64(0.0)
 
 
-class Temperature(JitStruct):
+class Temperature(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/Temperature"
     header: Header = msgspec.field(default_factory=Header)
     temperature: types.float64 = np.float64(0.0)
     variance: types.float64 = np.float64(0.0)
 
 
-class TimeReference(JitStruct):
+class TimeReference(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/TimeReference"
     header: Header = msgspec.field(default_factory=Header)
     time_ref: Time = msgspec.field(default_factory=Time)
     source: types.string = b""
 
 
-class CameraInfo(JitStruct):
+class CameraInfo(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/CameraInfo"
     header: Header = msgspec.field(default_factory=Header)
     height: types.uint32 = np.uint32(0)
@@ -275,7 +275,7 @@ class CameraInfo(JitStruct):
     roi: RegionOfInterest = msgspec.field(default_factory=RegionOfInterest)
 
 
-class JoyFeedbackArray(JitStruct):
+class JoyFeedbackArray(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/JoyFeedbackArray"
     __unsupported_reason__ = (
         "array is a collection of messages, which cydr does not support"
@@ -283,7 +283,7 @@ class JoyFeedbackArray(JitStruct):
     pass
 
 
-class MultiEchoLaserScan(JitStruct):
+class MultiEchoLaserScan(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/MultiEchoLaserScan"
     __unsupported_reason__ = (
         "ranges is a collection of messages, which cydr does not support"
@@ -291,7 +291,7 @@ class MultiEchoLaserScan(JitStruct):
     pass
 
 
-class NavSatFix(JitStruct):
+class NavSatFix(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/NavSatFix"
     header: Header = msgspec.field(default_factory=Header)
     status: NavSatStatus = msgspec.field(default_factory=NavSatStatus)
@@ -306,7 +306,7 @@ class NavSatFix(JitStruct):
     position_covariance_type: types.uint8 = np.uint8(0)
 
 
-class PointCloud(JitStruct):
+class PointCloud(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/PointCloud"
     __unsupported_reason__ = (
         "points is a collection of messages, which cydr does not support"
@@ -314,7 +314,7 @@ class PointCloud(JitStruct):
     pass
 
 
-class PointCloud2(JitStruct):
+class PointCloud2(IdlStruct):
     __idl_typename__ = "sensor_msgs/msg/PointCloud2"
     __unsupported_reason__ = (
         "fields is a collection of messages, which cydr does not support"

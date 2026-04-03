@@ -7,25 +7,25 @@ import numpy as np
 from cydr import types
 
 from .. import idl
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import CameraInfo
 
-class SetCameraInfo_Request(JitStruct):
+class SetCameraInfo_Request(IdlStruct):
     __idl_typename__ = 'sensor_msgs/srv/SetCameraInfo_Request'
     camera_info: CameraInfo = msgspec.field(default_factory=CameraInfo)
 
-class SetCameraInfo_Response(JitStruct):
+class SetCameraInfo_Response(IdlStruct):
     __idl_typename__ = 'sensor_msgs/srv/SetCameraInfo_Response'
     success: types.boolean = False
     status_message: types.string = b''
 
-class SetCameraInfo_Event(JitStruct):
+class SetCameraInfo_Event(IdlStruct):
     __idl_typename__ = 'sensor_msgs/srv/SetCameraInfo_Event'
     __unsupported_reason__ = 'request is a collection of messages, which cydr does not support'
     pass
 
-class SetCameraInfo(JitStruct):
+class SetCameraInfo(IdlStruct):
     __idl_typename__ = 'sensor_msgs/srv/SetCameraInfo'
     __unsupported_reason__ = 'event_message references unsupported message SetCameraInfo_Event'
     request_message: SetCameraInfo_Request = msgspec.field(default_factory=SetCameraInfo_Request)

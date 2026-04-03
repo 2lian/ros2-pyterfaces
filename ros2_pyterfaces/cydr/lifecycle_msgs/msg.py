@@ -6,25 +6,25 @@ import msgspec
 import numpy as np
 from cydr import types
 
-from ..idl import JitStruct
+from ..idl import IdlStruct
 
-class State(JitStruct):
+class State(IdlStruct):
     __idl_typename__ = 'lifecycle_msgs/msg/State'
     id: types.uint8 = np.uint8(0)
     label: types.string = b''
 
-class Transition(JitStruct):
+class Transition(IdlStruct):
     __idl_typename__ = 'lifecycle_msgs/msg/Transition'
     id: types.uint8 = np.uint8(0)
     label: types.string = b''
 
-class TransitionDescription(JitStruct):
+class TransitionDescription(IdlStruct):
     __idl_typename__ = 'lifecycle_msgs/msg/TransitionDescription'
     transition: Transition = msgspec.field(default_factory=Transition)
     start_state: State = msgspec.field(default_factory=State)
     goal_state: State = msgspec.field(default_factory=State)
 
-class TransitionEvent(JitStruct):
+class TransitionEvent(IdlStruct):
     __idl_typename__ = 'lifecycle_msgs/msg/TransitionEvent'
     timestamp: types.uint64 = np.uint64(0)
     transition: Transition = msgspec.field(default_factory=Transition)

@@ -6,10 +6,10 @@ import msgspec
 import numpy as np
 from cydr import types
 
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..builtin_interfaces.msg import Duration, Time
 
-class Builtins(JitStruct):
+class Builtins(IdlStruct):
     __idl_typename__ = 'test_msgs/msg/Builtins'
     duration_value: Duration = msgspec.field(default_factory=Duration)
     time_value: Time = msgspec.field(default_factory=Time)

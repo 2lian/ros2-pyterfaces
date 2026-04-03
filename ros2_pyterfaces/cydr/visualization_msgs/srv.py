@@ -7,24 +7,24 @@ import numpy as np
 from cydr import types
 
 from .. import idl
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import InteractiveMarker
 
-class GetInteractiveMarkers_Request(JitStruct):
+class GetInteractiveMarkers_Request(IdlStruct):
     __idl_typename__ = 'visualization_msgs/srv/GetInteractiveMarkers_Request'
 
-class GetInteractiveMarkers_Response(JitStruct):
+class GetInteractiveMarkers_Response(IdlStruct):
     __idl_typename__ = 'visualization_msgs/srv/GetInteractiveMarkers_Response'
     __unsupported_reason__ = 'markers is a collection of messages, which cydr does not support'
     pass
 
-class GetInteractiveMarkers_Event(JitStruct):
+class GetInteractiveMarkers_Event(IdlStruct):
     __idl_typename__ = 'visualization_msgs/srv/GetInteractiveMarkers_Event'
     __unsupported_reason__ = 'request is a collection of messages, which cydr does not support'
     pass
 
-class GetInteractiveMarkers(JitStruct):
+class GetInteractiveMarkers(IdlStruct):
     __idl_typename__ = 'visualization_msgs/srv/GetInteractiveMarkers'
     __unsupported_reason__ = 'response_message references unsupported message GetInteractiveMarkers_Response'
     request_message: GetInteractiveMarkers_Request = msgspec.field(default_factory=GetInteractiveMarkers_Request)

@@ -481,8 +481,6 @@ class IdlStruct(CyStruct):
         return cls.from_core_message(core_msg)
 
 
-JitStruct = IdlStruct
-
 
 class DummyEmpty(IdlStruct):
     __idl_typename__ = "does/not/matter/empty"

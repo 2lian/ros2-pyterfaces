@@ -6,10 +6,10 @@ import msgspec
 import numpy as np
 from cydr import types
 
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..builtin_interfaces.msg import Time
 
-class ServiceEventInfo(JitStruct):
+class ServiceEventInfo(IdlStruct):
     __idl_typename__ = 'service_msgs/msg/ServiceEventInfo'
     event_type: types.uint8 = np.uint8(0)
     stamp: Time = msgspec.field(default_factory=Time)

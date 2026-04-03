@@ -7,24 +7,24 @@ import numpy as np
 from cydr import types
 
 from ..builtin_interfaces.msg import Time
-from ..idl import JitStruct
+from ..idl import IdlStruct
 
 
-class FloatingPointRange(JitStruct):
+class FloatingPointRange(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/FloatingPointRange"
     from_value: types.float64 = np.float64(0.0)
     to_value: types.float64 = np.float64(0.0)
     step: types.float64 = np.float64(0.0)
 
 
-class IntegerRange(JitStruct):
+class IntegerRange(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/IntegerRange"
     from_value: types.int64 = np.int64(0)
     to_value: types.int64 = np.int64(0)
     step: types.uint64 = np.uint64(0)
 
 
-class ListParametersResult(JitStruct):
+class ListParametersResult(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/ListParametersResult"
     names: types.NDArray[Any, types.Bytes] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.bytes_)
@@ -34,13 +34,13 @@ class ListParametersResult(JitStruct):
     )
 
 
-class LoggerLevel(JitStruct):
+class LoggerLevel(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/LoggerLevel"
     name: types.string = b""
     level: types.uint32 = np.uint32(0)
 
 
-class Log(JitStruct):
+class Log(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/Log"
     stamp: Time = msgspec.field(default_factory=Time)
     level: types.uint8 = np.uint8(0)
@@ -51,11 +51,11 @@ class Log(JitStruct):
     line: types.uint32 = np.uint32(0)
 
 
-class ParameterType(JitStruct):
+class ParameterType(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/ParameterType"
 
 
-class ParameterValue(JitStruct):
+class ParameterValue(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/ParameterValue"
     type: types.uint8 = np.uint8(0)
     bool_value: types.boolean = False
@@ -79,19 +79,19 @@ class ParameterValue(JitStruct):
     )
 
 
-class SetLoggerLevelsResult(JitStruct):
+class SetLoggerLevelsResult(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/SetLoggerLevelsResult"
     successful: types.boolean = False
     reason: types.string = b""
 
 
-class SetParametersResult(JitStruct):
+class SetParametersResult(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/SetParametersResult"
     successful: types.boolean = False
     reason: types.string = b""
 
 
-class ParameterDescriptor(JitStruct):
+class ParameterDescriptor(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/ParameterDescriptor"
     __unsupported_reason__ = (
         "floating_point_range is a collection of messages, which cydr does not support"
@@ -99,13 +99,13 @@ class ParameterDescriptor(JitStruct):
     pass
 
 
-class Parameter(JitStruct):
+class Parameter(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/Parameter"
     name: types.string = b""
     value: ParameterValue = msgspec.field(default_factory=ParameterValue)
 
 
-class ParameterEventDescriptors(JitStruct):
+class ParameterEventDescriptors(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/ParameterEventDescriptors"
     __unsupported_reason__ = (
         "new_parameters is a collection of messages, which cydr does not support"
@@ -113,7 +113,7 @@ class ParameterEventDescriptors(JitStruct):
     pass
 
 
-class ParameterEvent(JitStruct):
+class ParameterEvent(IdlStruct):
     __idl_typename__ = "rcl_interfaces/msg/ParameterEvent"
     __unsupported_reason__ = (
         "new_parameters is a collection of messages, which cydr does not support"

@@ -7,19 +7,19 @@ import numpy as np
 from cydr import types
 
 from .. import idl
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..service_msgs.msg import ServiceEventInfo
 
 
-class Empty_Request(JitStruct):
+class Empty_Request(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Empty_Request"
 
 
-class Empty_Response(JitStruct):
+class Empty_Response(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Empty_Response"
 
 
-class Empty_Event(JitStruct):
+class Empty_Event(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Empty_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -27,7 +27,7 @@ class Empty_Event(JitStruct):
     pass
 
 
-class Empty(JitStruct):
+class Empty(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Empty"
     __unsupported_reason__ = "event_message references unsupported message Empty_Event"
     request_message: Empty_Request = msgspec.field(default_factory=Empty_Request)
@@ -35,18 +35,18 @@ class Empty(JitStruct):
     event_message: Empty_Event = msgspec.field(default_factory=lambda: Empty_Event())
 
 
-class SetBool_Request(JitStruct):
+class SetBool_Request(IdlStruct):
     __idl_typename__ = "std_srvs/srv/SetBool_Request"
     data: types.boolean = False
 
 
-class SetBool_Response(JitStruct):
+class SetBool_Response(IdlStruct):
     __idl_typename__ = "std_srvs/srv/SetBool_Response"
     success: types.boolean = False
     message: types.string = b""
 
 
-class SetBool_Event(JitStruct):
+class SetBool_Event(IdlStruct):
     __idl_typename__ = "std_srvs/srv/SetBool_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -54,7 +54,7 @@ class SetBool_Event(JitStruct):
     pass
 
 
-class SetBool(JitStruct):
+class SetBool(IdlStruct):
     __idl_typename__ = "std_srvs/srv/SetBool"
     __unsupported_reason__ = (
         "event_message references unsupported message SetBool_Event"
@@ -66,17 +66,17 @@ class SetBool(JitStruct):
     )
 
 
-class Trigger_Request(JitStruct):
+class Trigger_Request(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Trigger_Request"
 
 
-class Trigger_Response(JitStruct):
+class Trigger_Response(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Trigger_Response"
     success: types.boolean = False
     message: types.string = b""
 
 
-class Trigger_Event(JitStruct):
+class Trigger_Event(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Trigger_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -84,7 +84,7 @@ class Trigger_Event(JitStruct):
     pass
 
 
-class Trigger(JitStruct):
+class Trigger(IdlStruct):
     __idl_typename__ = "std_srvs/srv/Trigger"
     __unsupported_reason__ = (
         "event_message references unsupported message Trigger_Event"

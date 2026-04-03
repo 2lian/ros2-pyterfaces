@@ -6,11 +6,11 @@ import msgspec
 import numpy as np
 from cydr import types
 
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..sensor_msgs.msg import Image, RegionOfInterest
 from ..std_msgs.msg import Header
 
-class DisparityImage(JitStruct):
+class DisparityImage(IdlStruct):
     __idl_typename__ = 'stereo_msgs/msg/DisparityImage'
     header: Header = msgspec.field(default_factory=Header)
     image: Image = msgspec.field(default_factory=Image)

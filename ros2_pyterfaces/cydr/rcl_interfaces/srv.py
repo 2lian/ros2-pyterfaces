@@ -7,7 +7,7 @@ import numpy as np
 from cydr import types
 
 from .. import idl
-from ..idl import JitStruct
+from ..idl import IdlStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import (
     ListParametersResult,
@@ -20,14 +20,14 @@ from .msg import (
 )
 
 
-class DescribeParameters_Request(JitStruct):
+class DescribeParameters_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/DescribeParameters_Request"
     names: types.NDArray[Any, types.Bytes] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.bytes_)
     )
 
 
-class DescribeParameters_Response(JitStruct):
+class DescribeParameters_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/DescribeParameters_Response"
     __unsupported_reason__ = (
         "descriptors is a collection of messages, which cydr does not support"
@@ -35,7 +35,7 @@ class DescribeParameters_Response(JitStruct):
     pass
 
 
-class DescribeParameters(JitStruct):
+class DescribeParameters(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/DescribeParameters"
     __unsupported_reason__ = (
         "response_message references unsupported message DescribeParameters_Response"
@@ -51,7 +51,7 @@ class DescribeParameters(JitStruct):
     )
 
 
-class DescribeParameters_Event(JitStruct):
+class DescribeParameters_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/DescribeParameters_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -59,14 +59,14 @@ class DescribeParameters_Event(JitStruct):
     pass
 
 
-class GetLoggerLevels_Request(JitStruct):
+class GetLoggerLevels_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels_Request"
     names: types.NDArray[Any, types.Bytes] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.bytes_)
     )
 
 
-class GetLoggerLevels_Response(JitStruct):
+class GetLoggerLevels_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels_Response"
     __unsupported_reason__ = (
         "levels is a collection of messages, which cydr does not support"
@@ -74,7 +74,7 @@ class GetLoggerLevels_Response(JitStruct):
     pass
 
 
-class GetLoggerLevels(JitStruct):
+class GetLoggerLevels(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels"
     __unsupported_reason__ = (
         "response_message references unsupported message GetLoggerLevels_Response"
@@ -90,7 +90,7 @@ class GetLoggerLevels(JitStruct):
     )
 
 
-class GetLoggerLevels_Event(JitStruct):
+class GetLoggerLevels_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -98,14 +98,14 @@ class GetLoggerLevels_Event(JitStruct):
     pass
 
 
-class GetParameters_Request(JitStruct):
+class GetParameters_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameters_Request"
     names: types.NDArray[Any, types.Bytes] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.bytes_)
     )
 
 
-class GetParameters_Response(JitStruct):
+class GetParameters_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameters_Response"
     __unsupported_reason__ = (
         "values is a collection of messages, which cydr does not support"
@@ -113,7 +113,7 @@ class GetParameters_Response(JitStruct):
     pass
 
 
-class GetParameters(JitStruct):
+class GetParameters(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameters"
     __unsupported_reason__ = (
         "response_message references unsupported message GetParameters_Response"
@@ -129,7 +129,7 @@ class GetParameters(JitStruct):
     )
 
 
-class GetParameters_Event(JitStruct):
+class GetParameters_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameters_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -137,21 +137,21 @@ class GetParameters_Event(JitStruct):
     pass
 
 
-class GetParameterTypes_Request(JitStruct):
+class GetParameterTypes_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes_Request"
     names: types.NDArray[Any, types.Bytes] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.bytes_)
     )
 
 
-class GetParameterTypes_Response(JitStruct):
+class GetParameterTypes_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes_Response"
     types: types.NDArray[Any, types.UInt8] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.uint8)
     )
 
 
-class GetParameterTypes(JitStruct):
+class GetParameterTypes(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes"
     __unsupported_reason__ = (
         "event_message references unsupported message GetParameterTypes_Event"
@@ -167,7 +167,7 @@ class GetParameterTypes(JitStruct):
     )
 
 
-class GetParameterTypes_Event(JitStruct):
+class GetParameterTypes_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -175,7 +175,7 @@ class GetParameterTypes_Event(JitStruct):
     pass
 
 
-class ListParameters_Request(JitStruct):
+class ListParameters_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/ListParameters_Request"
     prefixes: types.NDArray[Any, types.Bytes] = msgspec.field(
         default_factory=lambda: np.empty(0, dtype=np.bytes_)
@@ -183,12 +183,12 @@ class ListParameters_Request(JitStruct):
     depth: types.uint64 = np.uint64(0)
 
 
-class ListParameters_Response(JitStruct):
+class ListParameters_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/ListParameters_Response"
     result: ListParametersResult = msgspec.field(default_factory=ListParametersResult)
 
 
-class ListParameters(JitStruct):
+class ListParameters(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/ListParameters"
     __unsupported_reason__ = (
         "event_message references unsupported message ListParameters_Event"
@@ -204,7 +204,7 @@ class ListParameters(JitStruct):
     )
 
 
-class ListParameters_Event(JitStruct):
+class ListParameters_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/ListParameters_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -212,7 +212,7 @@ class ListParameters_Event(JitStruct):
     pass
 
 
-class SetLoggerLevels_Request(JitStruct):
+class SetLoggerLevels_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels_Request"
     __unsupported_reason__ = (
         "levels is a collection of messages, which cydr does not support"
@@ -220,7 +220,7 @@ class SetLoggerLevels_Request(JitStruct):
     pass
 
 
-class SetLoggerLevels_Response(JitStruct):
+class SetLoggerLevels_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels_Response"
     __unsupported_reason__ = (
         "results is a collection of messages, which cydr does not support"
@@ -228,7 +228,7 @@ class SetLoggerLevels_Response(JitStruct):
     pass
 
 
-class SetLoggerLevels(JitStruct):
+class SetLoggerLevels(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels"
     __unsupported_reason__ = (
         "request_message references unsupported message SetLoggerLevels_Request"
@@ -244,7 +244,7 @@ class SetLoggerLevels(JitStruct):
     )
 
 
-class SetLoggerLevels_Event(JitStruct):
+class SetLoggerLevels_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -252,7 +252,7 @@ class SetLoggerLevels_Event(JitStruct):
     pass
 
 
-class SetParametersAtomically_Request(JitStruct):
+class SetParametersAtomically_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically_Request"
     __unsupported_reason__ = (
         "parameters is a collection of messages, which cydr does not support"
@@ -260,12 +260,12 @@ class SetParametersAtomically_Request(JitStruct):
     pass
 
 
-class SetParametersAtomically_Response(JitStruct):
+class SetParametersAtomically_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically_Response"
     result: SetParametersResult = msgspec.field(default_factory=SetParametersResult)
 
 
-class SetParametersAtomically(JitStruct):
+class SetParametersAtomically(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically"
     __unsupported_reason__ = (
         "request_message references unsupported message SetParametersAtomically_Request"
@@ -281,7 +281,7 @@ class SetParametersAtomically(JitStruct):
     )
 
 
-class SetParametersAtomically_Event(JitStruct):
+class SetParametersAtomically_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"
@@ -289,7 +289,7 @@ class SetParametersAtomically_Event(JitStruct):
     pass
 
 
-class SetParameters_Request(JitStruct):
+class SetParameters_Request(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParameters_Request"
     __unsupported_reason__ = (
         "parameters is a collection of messages, which cydr does not support"
@@ -297,7 +297,7 @@ class SetParameters_Request(JitStruct):
     pass
 
 
-class SetParameters_Response(JitStruct):
+class SetParameters_Response(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParameters_Response"
     __unsupported_reason__ = (
         "results is a collection of messages, which cydr does not support"
@@ -305,7 +305,7 @@ class SetParameters_Response(JitStruct):
     pass
 
 
-class SetParameters(JitStruct):
+class SetParameters(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParameters"
     __unsupported_reason__ = (
         "request_message references unsupported message SetParameters_Request"
@@ -321,7 +321,7 @@ class SetParameters(JitStruct):
     )
 
 
-class SetParameters_Event(JitStruct):
+class SetParameters_Event(IdlStruct):
     __idl_typename__ = "rcl_interfaces/srv/SetParameters_Event"
     __unsupported_reason__ = (
         "request is a collection of messages, which cydr does not support"

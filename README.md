@@ -12,8 +12,6 @@ Create new message types, (de)serialize them, compute the RIHS01 hash, and
 convert to and from ROS 2 Python messages. All ROS 2 `common_interfaces` are
 reimplemented, and every message tested to interoperate with ROS.
 
-Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/idl.html), but specialized for ROS 2.
-
 > [!NOTE]
 > This is a low level tool to send/receive raw payload with ROS 2, and to set up communications on the RMW.
 
@@ -35,8 +33,17 @@ Based on [Cyclone DDS IDL](https://cyclonedds.io/docs/cyclonedds-python/latest/i
 pip install "ros2_pyterfaces[cyclone]"
 ```
 
-The functional schema helpers live in `ros2_pyterfaces.idl`. Serialization and
-the packaged Cyclone-backed interfaces live under `ros2_pyterfaces.cyclone`.
+The library has three backends:
+
+- `core`: normalized schema and message representation. This is plain Python, so you can easily do whatever you need. However, it cannot encode/decode.
+- `cyclone`: This is the more complete IDL backend and the easiest one to hand-write. It is based on [Cyclone DDS Python](https://github.com/eclipse-cyclonedds/cyclonedds-python).
+- `cydr`: This backend is much stricter about types and annotations, has some limitations, but is tremendously faster than Cyclone. It is based on [cydr](https://github.com/2lian/cydr).
+
+Examples for the same `JointState` message in each style:
+
+- Core: [`ros2_pyterfaces/examples/core_joint_state.py`](ros2_pyterfaces/examples/core_joint_state.py)
+- Cyclone: [`ros2_pyterfaces/examples/cyclone_joint_state.py`](ros2_pyterfaces/examples/cyclone_joint_state.py)
+- cydr: [`ros2_pyterfaces/examples/cydr_joint_state.py`](ros2_pyterfaces/examples/cydr_joint_state.py)
 
 > [!NOTE]
 > Some ROS distros have minor differences -- mainly `to_ros()` / `from_ros()`.
@@ -48,47 +55,77 @@ the packaged Cyclone-backed interfaces live under `ros2_pyterfaces.cyclone`.
 ## Reliability
 
 Each message type in this library is heavily tested, for a total of more than
-2000 tests, including randomized fuzz-style roundtrips through ROS 2. The goal
-is 100% interoperability: conversions, serialization, deserialization, hashes,
-and raw payload exchange are all exercised against ROS 2.
+4000 tests, including randomized roundtrips through ROS 2. The goal
+is 100% interoperability. Conversions, serialization, deserialization, hashes,
+and raw payload exchange, are all exercised against ROS 2.
 
 ## Example
+
+First, choose the layer that matches what you need. In this examples we use `cyclone`.
+
+- `core` when you simply need a python dict.
+- `cyclone` when you want a more ergonomic, all rounded dataclass.
+- `cydr` when you want strict numpy types and higher performance.
 
 ### Message
 
 ```python
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from ros2_pyterfaces.cyclone.idl import IdlStruct, types
 
 @dataclass
-class Vector3(IdlStruct, typename="geometry_msgs/msg/Vector3"):
-    x: types.float64 = 0.0
-    y: types.float64 = 0.0
-    z: types.float64 = 0.0
+class Time(IdlStruct, typename="builtin_interfaces/msg/Time"):
+    sec: types.int32 = 0
+    nanosec: types.uint32 = 0
 
-my_msg: Vector3 = Vector3(1,2,3)
+
+@dataclass
+class Header(IdlStruct, typename="std_msgs/msg/Header"):
+    stamp: Time = field(default_factory=Time)
+    frame_id: str = ""
+
+@dataclass
+class JointState(IdlStruct, typename="sensor_msgs/msg/JointState"):
+    header: Header = field(default_factory=Header)
+    name: types.sequence[str] = field(default_factory=list)
+    position: types.sequence[types.float64] = field(default_factory=list)
+    velocity: types.sequence[types.float64] = field(default_factory=list)
+    effort: types.sequence[types.float64] = field(default_factory=list)
+
+my_msg: JointState = JointState(
+    header=Header(
+        stamp=Time(sec=1, nanosec=2),
+        frame_id="base_link",
+    ),
+    name=["joint_1", "joint_2"],
+    position=[1.0, 2.0],
+    velocity=[0.1, 0.2],
+    effort=[0.0, 0.0],
+)
 
 # serialization
 blob_bytes: bytes = my_msg.serialize()
-my_msg_again: Vector3 = Vector3.deserialize(blob_bytes)
+my_msg_again: JointState = JointState.deserialize(blob_bytes)
 
 # ROS 2 metadata
-json_type_description = Vector3.json_type_description()
-ros_hash = Vector3.hash_rihs01()
+json_type_description = JointState.json_type_description()
+ros_hash = JointState.hash_rihs01()
 
 # ROS 2 conversion
-ros_msg_type = Vector3.to_ros_type()
+ros_msg_type = JointState.to_ros_type()
 ros_msg = my_msg.to_ros()
-our_msg: Vector3 = Vector3.from_ros(ros_msg)
+our_msg: JointState = JointState.from_ros(ros_msg)
 ```
 
 ### Service
 
 Services follow the ROS naming pattern: `*_Request`, `*_Response`, `*_Event`,
 plus a small wrapper type. The serializable types are the request, response,
-and event dataclasses. The top-level service type is usually created with
-`make_idl_service(...)`. If you omit `event_type=...` (most cases), the factory
-generates a matching event type for you.
+and service wrapper. With `cyclone`, the generated event type is also a usable
+IDL struct. With `cydr`, the event type is just a placeholder because unsuported.
+The top-level service type is usually created with `make_idl_service(...)`.
+If you omit `event_type=...` (most cases), the factory generates the matching
+service metadata for you.
 
 ```python
 from dataclasses import dataclass
@@ -132,34 +169,36 @@ response_again = SetBool.Response.from_ros(ros_response)
 
 ### Utilities
 
-You can normalize messages to plain nested Python data for comparisons, tests,
-and snapshots:
+Messages can be converted to the normalized core representation (a json style
+`dict` of `str`, `int`, `bytes`, and `list`) for comparisons, tests, snapshots,
+and easier processing:
 
 ```python
-from ros2_pyterfaces.cyclone import idl
+core_schema = type(my_msg).to_core_schema()
+core_msg = my_msg.to_core_message()
 
-plain = idl.message_to_plain_data(my_msg)
-plain_ros = idl.message_to_plain_data(my_msg.to_ros(), type(my_msg))
-assert plain == plain_ros
+same_msg_again = type(my_msg).from_core_message(core_msg)
+assert same_msg_again.to_core_message() == core_msg
 ```
 
-There is also a deterministic random message generator for repeatable tests:
-
-```python
-from ros2_pyterfaces.cyclone.geometry_msgs.msg import Vector3
-from ros2_pyterfaces.utils.random import random_message
-
-msg = random_message(Vector3)
-same_msg_again = random_message(Vector3)
-assert msg == same_msg_again
-```
+The same core schema and core message can also be passed through
+`ros2_pyterfaces.core` helpers when you want ROS conversion without depending on
+a specific IDL backend.
 
 ## Attribution
 
-The low-level IDL model, serialization behavior, and part of the user API are
-dependent on (fantastic) Cyclone DDS Python's idl: https://github.com/eclipse-cyclonedds/cyclonedds-python.
+### Dependencies By Backend
 
-### Replicated ROS 2  Messages Repos
+- `core`
+  - [NumPy](https://numpy.org/)
+  - ROS 2 Python message/service classes from the installed distro, when using ROS conversion helpers
+- `cyclone`
+  - [Cyclone DDS Python](https://github.com/eclipse-cyclonedds/cyclonedds-python) via `cyclonedds_idl`
+- `cydr`
+  - [cydr](https://github.com/2lian/cydr)
+  - [msgspec](https://jcristharif.com/msgspec/)
+
+### Replicated ROS 2 Messages Repos
 
 - [`common_interfaces`](https://github.com/ros2/common_interfaces)
 - [`rcl_interfaces`](https://github.com/ros2/rcl_interfaces)
