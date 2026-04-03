@@ -2,6 +2,8 @@ import inspect
 from collections.abc import Mapping
 from typing import Any
 
+import pytest
+
 from ros2_pyterfaces import DISTRO, Distro
 from ros2_pyterfaces import core
 from ros2_pyterfaces.cyclone import all_msgs, all_srvs
@@ -23,9 +25,9 @@ NOT_IN_HUMBLE = {
     "type_description_interfaces/msg/TypeSource",
 }
 
-EXCLUDED_MESSAGE_TYPES = set(NOT_IN_ROS)
+IGNORED_MESSAGE_TYPES = set(NOT_IN_ROS)
 if DISTRO == Distro.HUMBLE:
-    EXCLUDED_MESSAGE_TYPES.update(NOT_IN_HUMBLE)
+    IGNORED_MESSAGE_TYPES.update(NOT_IN_HUMBLE)
 
 NOT_IN_ROS_SERVICE_TYPES: set[str] = set()
 NOT_IN_HUMBLE_SERVICE_TYPES = {
@@ -33,9 +35,9 @@ NOT_IN_HUMBLE_SERVICE_TYPES = {
     "rcl_interfaces/srv/SetLoggerLevels",
     "type_description_interfaces/srv/GetTypeDescription",
 }
-EXCLUDED_SERVICE_TYPES = set(NOT_IN_ROS_SERVICE_TYPES)
+IGNORED_SERVICE_TYPES = set(NOT_IN_ROS_SERVICE_TYPES)
 if DISTRO == Distro.HUMBLE:
-    EXCLUDED_SERVICE_TYPES.update(NOT_IN_HUMBLE_SERVICE_TYPES)
+    IGNORED_SERVICE_TYPES.update(NOT_IN_HUMBLE_SERVICE_TYPES)
 
 NOT_IN_ROS_SERVICE_MESSAGE_TYPES: set[str] = set()
 NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES = {
@@ -73,9 +75,9 @@ NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES = {
     "type_description_interfaces/srv/GetTypeDescription_Response",
     "visualization_msgs/srv/GetInteractiveMarkers_Event",
 }
-EXCLUDED_SERVICE_MESSAGE_TYPES = set(NOT_IN_ROS_SERVICE_MESSAGE_TYPES)
+IGNORED_SERVICE_MESSAGE_TYPES = set(NOT_IN_ROS_SERVICE_MESSAGE_TYPES)
 if DISTRO == Distro.HUMBLE:
-    EXCLUDED_SERVICE_MESSAGE_TYPES.update(NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES)
+    IGNORED_SERVICE_MESSAGE_TYPES.update(NOT_IN_HUMBLE_SERVICE_MESSAGE_TYPES)
 
 
 def _is_message_type(value: Any) -> bool:
@@ -90,8 +92,6 @@ def _collect_unique_message_types(namespace: Mapping[str, Any]) -> list[type[Idl
         msg_type = value
         type_name = msg_type.get_type_name()
         if "/msg/" not in type_name:
-            continue
-        if type_name in EXCLUDED_MESSAGE_TYPES:
             continue
         by_typename.setdefault(type_name, msg_type)
     return [by_typename[type_name] for type_name in sorted(by_typename)]
@@ -123,8 +123,6 @@ def _collect_unique_service_types(namespace: Mapping[str, Any]) -> list[type[Any
             continue
         if type_name.endswith("_Request") or type_name.endswith("_Response") or type_name.endswith("_Event"):
             continue
-        if type_name in EXCLUDED_SERVICE_TYPES:
-            continue
         by_typename.setdefault(type_name, service_type)
     return [by_typename[type_name] for type_name in sorted(by_typename)]
 
@@ -143,22 +141,49 @@ def _collect_unique_service_message_types(
         if not (
             type_name.endswith("_Request")
             or type_name.endswith("_Response")
-            or type_name.endswith("_Event")
         ):
-            continue
-        if type_name in EXCLUDED_SERVICE_MESSAGE_TYPES:
             continue
         by_typename.setdefault(type_name, service_msg_type)
     return [by_typename[type_name] for type_name in sorted(by_typename)]
 
 
+def _skip_for_typename(typename: str, ignored_typenames: set[str]) -> Any:
+    if typename in ignored_typenames:
+        return [pytest.mark.skip(reason=f"in ignore list: {typename}")]
+    return []
+
+
 MESSAGE_TYPES: list[type[IdlStruct]] = _collect_unique_message_types(vars(all_msgs))
 MESSAGE_TYPE_IDS: list[str] = [msg_type.get_type_name() for msg_type in MESSAGE_TYPES]
+MESSAGE_TYPE_PARAMS = [
+    pytest.param(
+        msg_type,
+        id=msg_type.get_type_name(),
+        marks=_skip_for_typename(msg_type.get_type_name(), IGNORED_MESSAGE_TYPES),
+    )
+    for msg_type in MESSAGE_TYPES
+]
 MESSAGE_VALUES: list[IdlStruct] = [random_message_for_type(msg_type) for msg_type in MESSAGE_TYPES]
 MESSAGE_VALUE_IDS: list[str] = [type(msg).get_type_name() for msg in MESSAGE_VALUES]
+MESSAGE_VALUE_PARAMS = [
+    pytest.param(
+        msg,
+        id=type(msg).get_type_name(),
+        marks=_skip_for_typename(type(msg).get_type_name(), IGNORED_MESSAGE_TYPES),
+    )
+    for msg in MESSAGE_VALUES
+]
 
 SERVICE_TYPES: list[type[Any]] = _collect_unique_service_types(vars(all_srvs))
 SERVICE_TYPE_IDS: list[str] = [service_type.get_type_name() for service_type in SERVICE_TYPES]
+SERVICE_TYPE_PARAMS = [
+    pytest.param(
+        service_type,
+        id=service_type.get_type_name(),
+        marks=_skip_for_typename(service_type.get_type_name(), IGNORED_SERVICE_TYPES),
+    )
+    for service_type in SERVICE_TYPES
+]
 
 SERVICE_MESSAGE_TYPES: list[type[IdlStruct]] = _collect_unique_service_message_types(
     vars(all_srvs)
@@ -166,10 +191,32 @@ SERVICE_MESSAGE_TYPES: list[type[IdlStruct]] = _collect_unique_service_message_t
 SERVICE_MESSAGE_TYPE_IDS: list[str] = [
     service_msg_type.get_type_name() for service_msg_type in SERVICE_MESSAGE_TYPES
 ]
+SERVICE_MESSAGE_TYPE_PARAMS = [
+    pytest.param(
+        service_msg_type,
+        id=service_msg_type.get_type_name(),
+        marks=_skip_for_typename(
+            service_msg_type.get_type_name(),
+            IGNORED_SERVICE_MESSAGE_TYPES,
+        ),
+    )
+    for service_msg_type in SERVICE_MESSAGE_TYPES
+]
 SERVICE_MESSAGE_VALUES: list[IdlStruct] = [
     service_msg_type()
     for service_msg_type in SERVICE_MESSAGE_TYPES
 ]
 SERVICE_MESSAGE_VALUE_IDS: list[str] = [
     type(msg).get_type_name() for msg in SERVICE_MESSAGE_VALUES
+]
+SERVICE_MESSAGE_VALUE_PARAMS = [
+    pytest.param(
+        msg,
+        id=type(msg).get_type_name(),
+        marks=_skip_for_typename(
+            type(msg).get_type_name(),
+            IGNORED_SERVICE_MESSAGE_TYPES,
+        ),
+    )
+    for msg in SERVICE_MESSAGE_VALUES
 ]

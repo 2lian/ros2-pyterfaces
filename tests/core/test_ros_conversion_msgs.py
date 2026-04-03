@@ -26,20 +26,23 @@ def _try_resolve_ros_type(schema: CoreSchema) -> type | None:
 _RESOLVED_BY_TYPENAME = {
     get_type_name(schema): _try_resolve_ros_type(schema) for schema in MESSAGE_SCHEMAS
 }
-AVAILABLE_MESSAGE_SCHEMAS = [
-    schema for schema in MESSAGE_SCHEMAS if _RESOLVED_BY_TYPENAME[get_type_name(schema)]
-]
-AVAILABLE_MESSAGE_SCHEMA_IDS = [
-    schema_id
-    for schema, schema_id in zip(MESSAGE_SCHEMAS, MESSAGE_SCHEMA_IDS)
-    if _RESOLVED_BY_TYPENAME[get_type_name(schema)]
-]
-
-if not AVAILABLE_MESSAGE_SCHEMAS:
-    pytest.skip(
-        "No ROS message schemas are available in this runtime",
-        allow_module_level=True,
+IGNORED_MESSAGE_SCHEMA_TYPENAMES = {
+    get_type_name(schema)
+    for schema in MESSAGE_SCHEMAS
+    if _RESOLVED_BY_TYPENAME[get_type_name(schema)] is None
+}
+MESSAGE_SCHEMA_PARAMS = [
+    pytest.param(
+        schema,
+        id=schema_id,
+        marks=(
+            [pytest.mark.skip(reason=f"in ignore list: {get_type_name(schema)}")]
+            if get_type_name(schema) in IGNORED_MESSAGE_SCHEMA_TYPENAMES
+            else []
+        ),
     )
+    for schema, schema_id in zip(MESSAGE_SCHEMAS, MESSAGE_SCHEMA_IDS)
+]
 
 
 def _resolved_ros_type(schema: CoreSchema) -> type:
@@ -49,7 +52,7 @@ def _resolved_ros_type(schema: CoreSchema) -> type:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_MESSAGE_SCHEMAS, ids=AVAILABLE_MESSAGE_SCHEMA_IDS
+    "schema", MESSAGE_SCHEMA_PARAMS
 )
 def test_message_to_ros_type(schema: CoreSchema) -> None:
     ros_type = _resolved_ros_type(schema)
@@ -57,7 +60,7 @@ def test_message_to_ros_type(schema: CoreSchema) -> None:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_MESSAGE_SCHEMAS, ids=AVAILABLE_MESSAGE_SCHEMA_IDS
+    "schema", MESSAGE_SCHEMA_PARAMS
 )
 def test_message_to_ros(schema: CoreSchema) -> None:
     ros_type = _resolved_ros_type(schema)
@@ -68,7 +71,7 @@ def test_message_to_ros(schema: CoreSchema) -> None:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_MESSAGE_SCHEMAS, ids=AVAILABLE_MESSAGE_SCHEMA_IDS
+    "schema", MESSAGE_SCHEMA_PARAMS
 )
 def test_message_from_ros(schema: CoreSchema) -> None:
     ros_type = _resolved_ros_type(schema)
@@ -80,7 +83,7 @@ def test_message_from_ros(schema: CoreSchema) -> None:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_MESSAGE_SCHEMAS, ids=AVAILABLE_MESSAGE_SCHEMA_IDS
+    "schema", MESSAGE_SCHEMA_PARAMS
 )
 def test_message_to_from_ros_roundtrip(schema: CoreSchema) -> None:
     _resolved_ros_type(schema)

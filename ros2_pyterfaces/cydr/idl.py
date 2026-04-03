@@ -553,24 +553,84 @@ def _make_service_event_type(
     response: type[IdlStruct],
     service_type_name: str,
     module_name: str,
-) -> type[IdlStruct]:
+) -> type:
     event_type_name = f"{service_type_name}_Event"
     event_class_name = event_type_name.rsplit("/", 1)[-1]
+    event_core_schema = core.make_srv_schema(
+        request.to_core_schema(),
+        response.to_core_schema(),
+        typename=service_type_name,
+    )["event_message"]
+
+    @classmethod
+    def get_type_name(cls) -> str:
+        return cast(str, cls.__idl_typename__)
+
+    @classmethod
+    def to_core_schema(cls) -> CoreSchema:
+        return event_core_schema
+
+    @classmethod
+    def json_type_description(cls, indent: int = 2) -> str:
+        return core.json_type_description(cls.to_core_schema(), indent=indent)
+
+    @classmethod
+    def _hash_rihs01_raw(cls) -> Any:
+        return core._hash_rihs01_raw(cls.to_core_schema())
+
+    @classmethod
+    def hash_rihs01(cls) -> str:
+        return core.hash_rihs01(cls.to_core_schema())
+
+    @classmethod
+    def to_ros_type(cls) -> type:
+        return core.to_ros_type(cls.to_core_schema())
+
+    def serialize(self) -> bytearray:
+        raise NotImplementedError(
+            "cydr service event placeholder does not implement serialize"
+        )
+
+    @classmethod
+    def deserialize(
+        cls,
+        data: Union[bytes, bytearray, memoryview],
+        string_collections: Optional[StringCollectionMode] = None,
+    ) -> Any:
+        raise NotImplementedError(
+            "cydr service event placeholder does not implement deserialize"
+        )
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
+        raise TypeError(
+            f"{cls.__module__}.{cls.__qualname__} is a service event type "
+            "placeholder and cannot be instantiated"
+        )
+
     namespace = {
         "__module__": module_name,
         "__idl_typename__": event_type_name,
         "__unsupported_reason__": (
-            "auto-generated service events are not implemented for cydr "
-            "(collections of nested messages)"
+            "auto-generated service events are represented as core schema only "
+            "for cydr service metadata and hashes"
         ),
+        "__new__": __new__,
+        "get_type_name": get_type_name,
+        "to_core_schema": to_core_schema,
+        "json_type_description": json_type_description,
+        "_hash_rihs01_raw": _hash_rihs01_raw,
+        "hash_rihs01": hash_rihs01,
+        "to_ros_type": to_ros_type,
+        "serialize": serialize,
+        "deserialize": deserialize,
     }
-    return cast(type[IdlStruct], type(event_class_name, (IdlStruct,), namespace))
+    return cast(type, type(event_class_name, (), namespace))
 
 
 def _make_service_type(
     request: type[IdlStruct],
     response: type[IdlStruct],
-    event_type: type[IdlStruct],
+    event_type: type,
     service_type_name: str,
     module_name: str,
 ) -> type:

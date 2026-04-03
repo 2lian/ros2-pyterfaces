@@ -28,20 +28,25 @@ KNOWN_SERVICE_HASH_BY_TYPENAME: dict[str, str] = {
 }
 
 
-def _available_message_params() -> tuple[list[CoreSchema], list[str]]:
-    schemas: list[CoreSchema] = []
-    ids: list[str] = []
-    for schema, schema_id in zip(MESSAGE_SCHEMAS, MESSAGE_SCHEMA_IDS):
-        try:
-            to_ros_type(schema)
-        except (ImportError, ModuleNotFoundError, AttributeError, ValueError):
-            continue
-        schemas.append(schema)
-        ids.append(schema_id)
-    return schemas, ids
+IGNORED_MESSAGE_SCHEMA_TYPENAMES = set()
+for schema in MESSAGE_SCHEMAS:
+    try:
+        to_ros_type(schema)
+    except (ImportError, ModuleNotFoundError, AttributeError, ValueError):
+        IGNORED_MESSAGE_SCHEMA_TYPENAMES.add(get_type_name(schema))
 
-
-AVAILABLE_MESSAGE_SCHEMAS, AVAILABLE_MESSAGE_SCHEMA_IDS = _available_message_params()
+MESSAGE_SCHEMA_PARAMS = [
+    pytest.param(
+        schema,
+        id=schema_id,
+        marks=(
+            [pytest.mark.skip(reason=f"in ignore list: {get_type_name(schema)}")]
+            if get_type_name(schema) in IGNORED_MESSAGE_SCHEMA_TYPENAMES
+            else []
+        ),
+    )
+    for schema, schema_id in zip(MESSAGE_SCHEMAS, MESSAGE_SCHEMA_IDS)
+]
 KNOWN_SERVICE_SCHEMAS = [
     schema
     for schema in SERVICE_SCHEMAS
@@ -93,7 +98,7 @@ def _get_message_name_hash(node: Node, schema: CoreSchema) -> tuple[str, bytes]:
 
 
 @pytest.mark.skipif(DISTRO == Distro.HUMBLE, reason="Humble does not have type hashes")
-@pytest.mark.parametrize("schema", AVAILABLE_MESSAGE_SCHEMAS, ids=AVAILABLE_MESSAGE_SCHEMA_IDS)
+@pytest.mark.parametrize("schema", MESSAGE_SCHEMA_PARAMS)
 def test_message_hash_matches_ros(schema: CoreSchema, ros_node: Node) -> None:
     name, hash_value = _get_message_name_hash(ros_node, schema)
     assert get_type_name(schema) == name

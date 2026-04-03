@@ -30,30 +30,40 @@ _RESOLVED_BY_TYPENAME = {
     get_type_name(schema): _try_resolve_ros_type(schema)
     for schema in [*SERVICE_SCHEMAS, *SERVICE_MESSAGE_SCHEMAS]
 }
-AVAILABLE_SERVICE_SCHEMAS = [
-    schema for schema in SERVICE_SCHEMAS if _RESOLVED_BY_TYPENAME[get_type_name(schema)]
-]
-AVAILABLE_SERVICE_SCHEMA_IDS = [
-    schema_id
-    for schema, schema_id in zip(SERVICE_SCHEMAS, SERVICE_SCHEMA_IDS)
-    if _RESOLVED_BY_TYPENAME[get_type_name(schema)]
-]
-AVAILABLE_SERVICE_MESSAGE_SCHEMAS = [
-    schema
-    for schema in SERVICE_MESSAGE_SCHEMAS
-    if _RESOLVED_BY_TYPENAME[get_type_name(schema)]
-]
-AVAILABLE_SERVICE_MESSAGE_SCHEMA_IDS = [
-    schema_id
-    for schema, schema_id in zip(SERVICE_MESSAGE_SCHEMAS, SERVICE_MESSAGE_SCHEMA_IDS)
-    if _RESOLVED_BY_TYPENAME[get_type_name(schema)]
-]
-
-if not AVAILABLE_SERVICE_SCHEMAS and not AVAILABLE_SERVICE_MESSAGE_SCHEMAS:
-    pytest.skip(
-        "No ROS service schemas are available in this runtime",
-        allow_module_level=True,
+IGNORED_SERVICE_SCHEMA_TYPENAMES = {
+    get_type_name(schema)
+    for schema in SERVICE_SCHEMAS
+    if _RESOLVED_BY_TYPENAME[get_type_name(schema)] is None
+}
+SERVICE_SCHEMA_PARAMS = [
+    pytest.param(
+        schema,
+        id=schema_id,
+        marks=(
+            [pytest.mark.skip(reason=f"in ignore list: {get_type_name(schema)}")]
+            if get_type_name(schema) in IGNORED_SERVICE_SCHEMA_TYPENAMES
+            else []
+        ),
     )
+    for schema, schema_id in zip(SERVICE_SCHEMAS, SERVICE_SCHEMA_IDS)
+]
+IGNORED_SERVICE_MESSAGE_SCHEMA_TYPENAMES = {
+    get_type_name(schema)
+    for schema in SERVICE_MESSAGE_SCHEMAS
+    if _RESOLVED_BY_TYPENAME[get_type_name(schema)] is None
+}
+SERVICE_MESSAGE_SCHEMA_PARAMS = [
+    pytest.param(
+        schema,
+        id=schema_id,
+        marks=(
+            [pytest.mark.skip(reason=f"in ignore list: {get_type_name(schema)}")]
+            if get_type_name(schema) in IGNORED_SERVICE_MESSAGE_SCHEMA_TYPENAMES
+            else []
+        ),
+    )
+    for schema, schema_id in zip(SERVICE_MESSAGE_SCHEMAS, SERVICE_MESSAGE_SCHEMA_IDS)
+]
 
 
 def _resolved_ros_type(schema: CoreSchema) -> type:
@@ -63,7 +73,7 @@ def _resolved_ros_type(schema: CoreSchema) -> type:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_SERVICE_SCHEMAS, ids=AVAILABLE_SERVICE_SCHEMA_IDS
+    "schema", SERVICE_SCHEMA_PARAMS
 )
 def test_service_to_ros_type(schema: CoreSchema) -> None:
     ros_type = _resolved_ros_type(schema)
@@ -71,7 +81,7 @@ def test_service_to_ros_type(schema: CoreSchema) -> None:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_SERVICE_SCHEMAS, ids=AVAILABLE_SERVICE_SCHEMA_IDS
+    "schema", SERVICE_SCHEMA_PARAMS
 )
 def test_service_to_ros(schema: CoreSchema) -> None:
     _resolved_ros_type(schema)
@@ -88,7 +98,7 @@ def test_service_to_ros(schema: CoreSchema) -> None:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_SERVICE_SCHEMAS, ids=AVAILABLE_SERVICE_SCHEMA_IDS
+    "schema", SERVICE_SCHEMA_PARAMS
 )
 def test_service_from_ros(schema: CoreSchema) -> None:
     _resolved_ros_type(schema)
@@ -100,7 +110,7 @@ def test_service_from_ros(schema: CoreSchema) -> None:
 
 
 @pytest.mark.parametrize(
-    "schema", AVAILABLE_SERVICE_SCHEMAS, ids=AVAILABLE_SERVICE_SCHEMA_IDS
+    "schema", SERVICE_SCHEMA_PARAMS
 )
 def test_service_to_from_ros_roundtrip(schema: CoreSchema) -> None:
     _resolved_ros_type(schema)
@@ -112,8 +122,7 @@ def test_service_to_from_ros_roundtrip(schema: CoreSchema) -> None:
 
 @pytest.mark.parametrize(
     "schema",
-    AVAILABLE_SERVICE_MESSAGE_SCHEMAS,
-    ids=AVAILABLE_SERVICE_MESSAGE_SCHEMA_IDS,
+    SERVICE_MESSAGE_SCHEMA_PARAMS,
 )
 def test_service_message_to_ros_type(schema: CoreSchema) -> None:
     ros_type = _resolved_ros_type(schema)
@@ -122,8 +131,7 @@ def test_service_message_to_ros_type(schema: CoreSchema) -> None:
 
 @pytest.mark.parametrize(
     "schema",
-    AVAILABLE_SERVICE_MESSAGE_SCHEMAS,
-    ids=AVAILABLE_SERVICE_MESSAGE_SCHEMA_IDS,
+    SERVICE_MESSAGE_SCHEMA_PARAMS,
 )
 def test_service_message_to_from_ros_roundtrip(schema: CoreSchema) -> None:
     _resolved_ros_type(schema)

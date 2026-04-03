@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import InteractiveMarker
@@ -29,3 +30,12 @@ class GetInteractiveMarkers(JitStruct):
     request_message: GetInteractiveMarkers_Request = msgspec.field(default_factory=GetInteractiveMarkers_Request)
     response_message: GetInteractiveMarkers_Response = msgspec.field(default_factory=GetInteractiveMarkers_Response)
     event_message: GetInteractiveMarkers_Event = msgspec.field(default_factory=lambda: GetInteractiveMarkers_Event())
+
+# cydr service type bindings
+GetInteractiveMarkers = idl.make_idl_service(
+    GetInteractiveMarkers_Request,
+    GetInteractiveMarkers_Response,
+    typename=GetInteractiveMarkers_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetInteractiveMarkers_Event = GetInteractiveMarkers.Event

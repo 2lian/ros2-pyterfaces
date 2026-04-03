@@ -2,10 +2,10 @@ import pytest
 
 from ros2_pyterfaces.cydr.idl import IdlStruct
 
-from .utils import MESSAGE_VALUE_IDS, MESSAGE_VALUES
+from .utils import MESSAGE_VALUE_PARAMS
 
 
-@pytest.mark.parametrize("msg", MESSAGE_VALUES, ids=MESSAGE_VALUE_IDS)
+@pytest.mark.parametrize("msg", MESSAGE_VALUE_PARAMS)
 def test_message_to_from_core_roundtrip(msg: IdlStruct) -> None:
     msg_type = type(msg)
     core_msg = msg.to_core_message()

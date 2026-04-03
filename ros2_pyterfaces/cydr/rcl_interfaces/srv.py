@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import (
@@ -326,3 +327,68 @@ class SetParameters_Event(JitStruct):
         "request is a collection of messages, which cydr does not support"
     )
     pass
+
+# cydr service type bindings
+DescribeParameters = idl.make_idl_service(
+    DescribeParameters_Request,
+    DescribeParameters_Response,
+    typename=DescribeParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+DescribeParameters_Event = DescribeParameters.Event
+
+GetLoggerLevels = idl.make_idl_service(
+    GetLoggerLevels_Request,
+    GetLoggerLevels_Response,
+    typename=GetLoggerLevels_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetLoggerLevels_Event = GetLoggerLevels.Event
+
+GetParameterTypes = idl.make_idl_service(
+    GetParameterTypes_Request,
+    GetParameterTypes_Response,
+    typename=GetParameterTypes_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetParameterTypes_Event = GetParameterTypes.Event
+
+GetParameters = idl.make_idl_service(
+    GetParameters_Request,
+    GetParameters_Response,
+    typename=GetParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetParameters_Event = GetParameters.Event
+
+ListParameters = idl.make_idl_service(
+    ListParameters_Request,
+    ListParameters_Response,
+    typename=ListParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+ListParameters_Event = ListParameters.Event
+
+SetLoggerLevels = idl.make_idl_service(
+    SetLoggerLevels_Request,
+    SetLoggerLevels_Response,
+    typename=SetLoggerLevels_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetLoggerLevels_Event = SetLoggerLevels.Event
+
+SetParameters = idl.make_idl_service(
+    SetParameters_Request,
+    SetParameters_Response,
+    typename=SetParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetParameters_Event = SetParameters.Event
+
+SetParametersAtomically = idl.make_idl_service(
+    SetParametersAtomically_Request,
+    SetParametersAtomically_Response,
+    typename=SetParametersAtomically_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetParametersAtomically_Event = SetParametersAtomically.Event

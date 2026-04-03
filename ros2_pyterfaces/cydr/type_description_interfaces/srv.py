@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import KeyValue, TypeDescription, TypeSource
@@ -32,3 +33,12 @@ class GetTypeDescription(JitStruct):
     request_message: GetTypeDescription_Request = msgspec.field(default_factory=GetTypeDescription_Request)
     response_message: GetTypeDescription_Response = msgspec.field(default_factory=GetTypeDescription_Response)
     event_message: GetTypeDescription_Event = msgspec.field(default_factory=lambda: GetTypeDescription_Event())
+
+# cydr service type bindings
+GetTypeDescription = idl.make_idl_service(
+    GetTypeDescription_Request,
+    GetTypeDescription_Response,
+    typename=GetTypeDescription_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetTypeDescription_Event = GetTypeDescription.Event

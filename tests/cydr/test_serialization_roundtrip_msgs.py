@@ -3,9 +3,10 @@ from rclpy.serialization import deserialize_message, serialize_message
 
 from ros2_pyterfaces.cydr.idl import IdlStruct
 
-from .utils import MESSAGE_VALUE_IDS, MESSAGE_VALUES
+from .utils import MESSAGE_VALUE_PARAMS
 
-@pytest.mark.parametrize("msg", MESSAGE_VALUES, ids=MESSAGE_VALUE_IDS)
+
+@pytest.mark.parametrize("msg", MESSAGE_VALUE_PARAMS)
 def test_cydr_serialize_deserialize(msg: IdlStruct) -> None:
     msg_type = type(msg)
     expected_core = msg.to_core_message()
@@ -16,7 +17,7 @@ def test_cydr_serialize_deserialize(msg: IdlStruct) -> None:
     assert roundtrip.to_core_message() == expected_core
 
 
-@pytest.mark.parametrize("msg", MESSAGE_VALUES, ids=MESSAGE_VALUE_IDS)
+@pytest.mark.parametrize("msg", MESSAGE_VALUE_PARAMS)
 def test_ros_serialize_cydr_deserialize(msg: IdlStruct) -> None:
     msg_type = type(msg)
     expected_core = msg.to_core_message()
@@ -27,7 +28,7 @@ def test_ros_serialize_cydr_deserialize(msg: IdlStruct) -> None:
     assert cydr_from_ros_bytes.to_core_message() == expected_core
 
 
-@pytest.mark.parametrize("msg", MESSAGE_VALUES, ids=MESSAGE_VALUE_IDS)
+@pytest.mark.parametrize("msg", MESSAGE_VALUE_PARAMS)
 def test_cydr_serialize_ros_deserialize(msg: IdlStruct) -> None:
     msg_type = type(msg)
     ros_type = msg_type.to_ros_type()

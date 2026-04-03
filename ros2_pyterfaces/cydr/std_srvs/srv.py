@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..service_msgs.msg import ServiceEventInfo
 
@@ -93,3 +94,28 @@ class Trigger(JitStruct):
     event_message: Trigger_Event = msgspec.field(
         default_factory=lambda: Trigger_Event()
     )
+
+# cydr service type bindings
+Empty = idl.make_idl_service(
+    Empty_Request,
+    Empty_Response,
+    typename=Empty_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+Empty_Event = Empty.Event
+
+SetBool = idl.make_idl_service(
+    SetBool_Request,
+    SetBool_Response,
+    typename=SetBool_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetBool_Event = SetBool.Event
+
+Trigger = idl.make_idl_service(
+    Trigger_Request,
+    Trigger_Response,
+    typename=Trigger_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+Trigger_Event = Trigger.Event

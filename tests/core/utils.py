@@ -38,7 +38,6 @@ def _is_service_message_schema(schema: CoreSchema) -> bool:
     return "/srv/" in type_name and (
         type_name.endswith("_Request")
         or type_name.endswith("_Response")
-        or type_name.endswith("_Event")
     )
 
 

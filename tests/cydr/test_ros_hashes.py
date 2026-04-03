@@ -12,7 +12,7 @@ from rclpy.node import Node
 from ros2_pyterfaces import DISTRO, Distro
 from ros2_pyterfaces.cydr.idl import IdlStruct
 
-from .utils import MESSAGE_TYPE_IDS, MESSAGE_TYPES
+from .utils import MESSAGE_TYPE_PARAMS
 
 
 @pytest.fixture(scope="module")
@@ -54,7 +54,7 @@ def _get_message_name_hash(node: Node, msg_type: type[IdlStruct]) -> tuple[str, 
 
 
 @pytest.mark.skipif(DISTRO == Distro.HUMBLE, reason="Humble does not have type hashes")
-@pytest.mark.parametrize("msg_type", MESSAGE_TYPES, ids=MESSAGE_TYPE_IDS)
+@pytest.mark.parametrize("msg_type", MESSAGE_TYPE_PARAMS)
 def test_message_hash_matches_ros(msg_type: type[IdlStruct], ros_node: Node) -> None:
     name, hash_value = _get_message_name_hash(ros_node, msg_type)
     assert msg_type.get_type_name() == name

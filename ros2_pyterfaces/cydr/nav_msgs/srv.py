@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from ..service_msgs.msg import ServiceEventInfo
@@ -94,3 +95,36 @@ class SetMap(JitStruct):
     request_message: SetMap_Request = msgspec.field(default_factory=SetMap_Request)
     response_message: SetMap_Response = msgspec.field(default_factory=SetMap_Response)
     event_message: SetMap_Event = msgspec.field(default_factory=lambda: SetMap_Event())
+
+# cydr service type bindings
+GetMap = idl.make_idl_service(
+    GetMap_Request,
+    GetMap_Response,
+    typename=GetMap_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetMap_Event = GetMap.Event
+
+GetPlan = idl.make_idl_service(
+    GetPlan_Request,
+    GetPlan_Response,
+    typename=GetPlan_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetPlan_Event = GetPlan.Event
+
+LoadMap = idl.make_idl_service(
+    LoadMap_Request,
+    LoadMap_Response,
+    typename=LoadMap_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+LoadMap_Event = LoadMap.Event
+
+SetMap = idl.make_idl_service(
+    SetMap_Request,
+    SetMap_Response,
+    typename=SetMap_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetMap_Event = SetMap.Event

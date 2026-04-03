@@ -4,10 +4,8 @@ from ros2_pyterfaces import core
 from ros2_pyterfaces.cydr.idl import IdlStruct
 
 from .utils import (
-    MESSAGE_TYPE_IDS,
-    MESSAGE_TYPES,
-    MESSAGE_VALUE_IDS,
-    MESSAGE_VALUES,
+    MESSAGE_TYPE_PARAMS,
+    MESSAGE_VALUE_PARAMS,
 )
 
 
@@ -74,13 +72,13 @@ def _assert_message_matches_schema(
         _assert_entry_matches_schema(entry, message[field_name])
 
 
-@pytest.mark.parametrize("msg_type", MESSAGE_TYPES, ids=MESSAGE_TYPE_IDS)
+@pytest.mark.parametrize("msg_type", MESSAGE_TYPE_PARAMS)
 def test_message_to_ros_type(msg_type: type[IdlStruct]) -> None:
     ros_type = msg_type.to_ros_type()
     assert isinstance(ros_type, type)
 
 
-@pytest.mark.parametrize("msg", MESSAGE_VALUES, ids=MESSAGE_VALUE_IDS)
+@pytest.mark.parametrize("msg", MESSAGE_VALUE_PARAMS)
 def test_message_to_ros(msg: IdlStruct) -> None:
     msg_type = type(msg)
     ros_type = msg_type.to_ros_type()
@@ -89,7 +87,7 @@ def test_message_to_ros(msg: IdlStruct) -> None:
     assert isinstance(ros_msg, ros_type)
 
 
-@pytest.mark.parametrize("msg_type", MESSAGE_TYPES, ids=MESSAGE_TYPE_IDS)
+@pytest.mark.parametrize("msg_type", MESSAGE_TYPE_PARAMS)
 def test_message_from_ros(msg_type: type[IdlStruct]) -> None:
     ros_type = msg_type.to_ros_type()
     ros_msg = ros_type()
@@ -99,7 +97,7 @@ def test_message_from_ros(msg_type: type[IdlStruct]) -> None:
     _assert_message_matches_schema(msg_type.to_core_schema(), msg.to_core_message())
 
 
-@pytest.mark.parametrize("msg", MESSAGE_VALUES, ids=MESSAGE_VALUE_IDS)
+@pytest.mark.parametrize("msg", MESSAGE_VALUE_PARAMS)
 def test_message_to_from_ros_roundtrip(msg: IdlStruct) -> None:
     msg_type = type(msg)
     msg_type.to_ros_type()

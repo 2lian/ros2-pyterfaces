@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..rcl_interfaces.msg import Parameter
 from ..service_msgs.msg import ServiceEventInfo
@@ -74,3 +75,28 @@ class UnloadNode_Event(JitStruct):
     __idl_typename__ = 'composition_interfaces/srv/UnloadNode_Event'
     __unsupported_reason__ = 'request is a collection of messages, which cydr does not support'
     pass
+
+# cydr service type bindings
+ListNodes = idl.make_idl_service(
+    ListNodes_Request,
+    ListNodes_Response,
+    typename=ListNodes_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+ListNodes_Event = ListNodes.Event
+
+LoadNode = idl.make_idl_service(
+    LoadNode_Request,
+    LoadNode_Response,
+    typename=LoadNode_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+LoadNode_Event = LoadNode.Event
+
+UnloadNode = idl.make_idl_service(
+    UnloadNode_Request,
+    UnloadNode_Response,
+    typename=UnloadNode_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+UnloadNode_Event = UnloadNode.Event

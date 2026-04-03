@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from .. import idl
 from ..idl import JitStruct
 from ..service_msgs.msg import ServiceEventInfo
 from .msg import State, Transition, TransitionDescription
@@ -88,3 +89,36 @@ class GetState_Event(JitStruct):
     __idl_typename__ = 'lifecycle_msgs/srv/GetState_Event'
     __unsupported_reason__ = 'request is a collection of messages, which cydr does not support'
     pass
+
+# cydr service type bindings
+ChangeState = idl.make_idl_service(
+    ChangeState_Request,
+    ChangeState_Response,
+    typename=ChangeState_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+ChangeState_Event = ChangeState.Event
+
+GetAvailableStates = idl.make_idl_service(
+    GetAvailableStates_Request,
+    GetAvailableStates_Response,
+    typename=GetAvailableStates_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetAvailableStates_Event = GetAvailableStates.Event
+
+GetAvailableTransitions = idl.make_idl_service(
+    GetAvailableTransitions_Request,
+    GetAvailableTransitions_Response,
+    typename=GetAvailableTransitions_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetAvailableTransitions_Event = GetAvailableTransitions.Event
+
+GetState = idl.make_idl_service(
+    GetState_Request,
+    GetState_Response,
+    typename=GetState_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetState_Event = GetState.Event
