@@ -312,7 +312,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
 
     @classmethod
     def from_core_schema(cls) -> CoreSchema:
-        return cls.to_core_schema()
+        return NotImplemented
 
     def to_core_message(self) -> dict[str, Any]:
         cls = type(self)
@@ -335,20 +335,7 @@ class IdlStruct(_idl.IdlStruct, metaclass=IdlMetaIgnoreFinal):
         return cls(**kwargs)
 
     @classmethod
-    def json_type_description(
-        cls,
-        root_type_name: str | None = None,
-        type_name_overrides: Mapping[type, str] | None = None,
-        indent: int = 2,
-    ) -> str:
-        if root_type_name is not None:
-            raise ValueError(
-                "root_type_name is not supported in cyclone core-backed mode"
-            )
-        if type_name_overrides is not None:
-            raise ValueError(
-                "type_name_overrides is not supported in cyclone core-backed mode"
-            )
+    def json_type_description(cls, indent: int = 2) -> str:
         return core.json_type_description(cls.to_core_schema(), indent=indent)
 
     @classmethod

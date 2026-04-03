@@ -1,6 +1,33 @@
 from dataclasses import dataclass
 from typing import Literal, TypeAlias, get_args
 
+# Canonical core message value representation.
+#
+# Scalar primitives:
+# - bool: bool
+# - byte: (bytes | bytearray | memoryview) with len == 1
+# - char: int
+# - int8: int
+# - uint8: int
+# - int16: int
+# - uint16: int
+# - int32: int
+# - uint32: int
+# - int64: int
+# - uint64: int
+# - float32: float
+# - float64: float
+# - string: str
+#
+# Primitive collections:
+# - Sequence("byte") / Array("byte", N): (bytes | bytearray | memoryview)
+# - Sequence(<primitive != "byte">) / Array(<primitive != "byte">, N):
+#   list[scalar representation of that primitive]
+#
+# Examples:
+# - Sequence("uint8") -> list[int]
+# - Array("int8", 4) -> list[int]
+# - Sequence("string") -> list[str]
 Primitive: TypeAlias = Literal[
     "bool",
     "byte",

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import pytest
+from rclpy.serialization import deserialize_message, serialize_message
 
 from ros2_pyterfaces.core import (
     CoreSchema,
+    all_msgs,
     from_ros,
     get_type_name,
     random_message,
@@ -86,3 +88,28 @@ def test_message_to_from_ros_roundtrip(schema: CoreSchema) -> None:
     roundtrip = from_ros(schema, to_ros(core_msg))
 
     assert roundtrip == core_msg
+
+
+def test_to_ros_sequence_byte_stays_bytes() -> None:
+    schema = all_msgs.ParameterValue
+    core_msg = {
+        "__typename": "rcl_interfaces/msg/ParameterValue",
+        "type": 1,
+        "bool_value": False,
+        "integer_value": 0,
+        "double_value": 0.0,
+        "string_value": "x",
+        "byte_array_value": b"\x00\xeb",
+        "bool_array_value": [],
+        "integer_array_value": [],
+        "double_array_value": [],
+        "string_array_value": [],
+    }
+    ros_msg = to_ros(core_msg)
+    assert isinstance(ros_msg.byte_array_value, (bytes, bytearray, memoryview))
+
+    ros_bytes = serialize_message(ros_msg)
+    ros_roundtrip = deserialize_message(ros_bytes, type(ros_msg))
+    roundtrip = from_ros(schema, ros_roundtrip)
+
+    assert roundtrip["byte_array_value"] == core_msg["byte_array_value"]

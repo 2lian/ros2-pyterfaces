@@ -11,6 +11,7 @@ from .description import (
 from .random import random_message
 from .ros import from_ros, to_ros, to_ros_type
 from .schema import _service_name_from_request_response, get_type_name, make_srv_schema
+from .verify import verify_message
 from .types import (
     PRIMITIVES,
     TYPENAME_KEY,
@@ -50,4 +51,5 @@ __all__ = [
     "ros2_type_hash_from_json",
     "to_ros",
     "to_ros_type",
+    "verify_message",
 ]

@@ -225,10 +225,6 @@ def _to_ros_value(value: Any, destination_value: Any = None) -> Any:
         return [_to_ros_value(item) for item in value]
 
     if isinstance(value, (bytes, bytearray, memoryview)):
-        if isinstance(destination_value, bytes):
-            return bytes(value)
-        if _is_sequence_like(destination_value):
-            return list(bytes(value))
         return bytes(value)
 
     return value
