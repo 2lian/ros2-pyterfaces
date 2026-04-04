@@ -25935,8 +25935,8 @@ packages:
   timestamp: 1769480914643
 - pypi: ./
   name: ros2-pyterfaces
-  version: 0.1.2
-  sha256: 9fe03c2f7c00f649609074881fad746193a5d643d261beff7901ff7174f63472
+  version: 0.2.0
+  sha256: 03acfd79b6e25829ed7ba49a59dabd5c2c09418d03d80a3fce70663c0522968d
   requires_dist:
   - cydr ; extra == 'cydr'
   - numpy ; extra == 'cyclone'
