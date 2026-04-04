@@ -30,7 +30,7 @@ reimplemented, and every message tested to interoperate with ROS.
 ## Install
 
 ```bash
-pip install "ros2_pyterfaces[cyclone]"
+pip install ros2_pyterfaces[cyclone, cydr]
 ```
 
 The library has three backends:
