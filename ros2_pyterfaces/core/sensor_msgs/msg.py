@@ -1,3 +1,4 @@
+from ... import DISTRO, Distro
 from .. import Array, BoundedString, CoreSchema, Sequence
 
 from ..builtin_interfaces.msg import Time
@@ -155,6 +156,17 @@ Range: CoreSchema = {
     "range": "float32",
     "variance": "float32",
 }
+
+if DISTRO == Distro.HUMBLE:
+    Range = {
+        "__typename": "sensor_msgs/msg/Range",
+        "header": Header,
+        "radiation_type": "uint8",
+        "field_of_view": "float32",
+        "min_range": "float32",
+        "max_range": "float32",
+        "range": "float32",
+    }
 
 RegionOfInterest: CoreSchema = {
     "__typename": "sensor_msgs/msg/RegionOfInterest",

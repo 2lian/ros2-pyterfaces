@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from rclpy.serialization import deserialize_message, serialize_message
 
+from ros2_pyterfaces import DISTRO, Distro
 from ros2_pyterfaces.core import (
     CoreSchema,
     all_msgs,
@@ -109,7 +110,11 @@ def test_to_ros_sequence_byte_stays_bytes() -> None:
         "string_array_value": [],
     }
     ros_msg = to_ros(core_msg)
-    assert isinstance(ros_msg.byte_array_value, (bytes, bytearray, memoryview))
+    if DISTRO == Distro.HUMBLE:
+        assert isinstance(ros_msg.byte_array_value, list)
+        assert all(isinstance(item, bytes) for item in ros_msg.byte_array_value)
+    else:
+        assert isinstance(ros_msg.byte_array_value, (bytes, bytearray, memoryview))
 
     ros_bytes = serialize_message(ros_msg)
     ros_roundtrip = deserialize_message(ros_bytes, type(ros_msg))

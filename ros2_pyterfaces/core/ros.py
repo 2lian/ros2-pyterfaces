@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence as SequenceABC
 from importlib import import_module
 from typing import Any
 
+from .. import DISTRO, Distro
 from .schema import get_type_name
 from .types import (
     _EVENT_FIELD,
@@ -103,6 +104,8 @@ def to_ros_type(schema: CoreSchema) -> type:
         service = getattr(module, service_name, None)
         if service is not None and hasattr(service, "Event"):
             return service.Event
+        if DISTRO == Distro.HUMBLE:
+            return dict
 
     raise AttributeError(
         f"ROS equivalent for {type_name!r} does not seem to exist in this runtime."
@@ -225,9 +228,20 @@ def _to_ros_value(value: Any, destination_value: Any = None) -> Any:
         return [_to_ros_value(item) for item in value]
 
     if isinstance(value, (bytes, bytearray, memoryview)):
+        if DISTRO == Distro.HUMBLE and isinstance(destination_value, list):
+            return [bytes([item]) for item in bytes(value)]
         return bytes(value)
 
     return value
+
+
+def _to_ros_mapping(core_msg: dict[str, Any]) -> dict[str, Any]:
+    ros_msg: dict[str, Any] = {}
+    for field_name, value in core_msg.items():
+        if field_name == _TYPENAME_KEY:
+            continue
+        ros_msg[field_name] = _to_ros_value(value)
+    return ros_msg
 
 
 def to_ros(core_msg: dict[str, Any]) -> Any:
@@ -240,6 +254,8 @@ def to_ros(core_msg: dict[str, Any]) -> Any:
         }
 
     ros_type = to_ros_type(core_msg)
+    if ros_type is dict:
+        return _to_ros_mapping(core_msg)
     ros_msg = ros_type()
 
     for field_name, value in core_msg.items():

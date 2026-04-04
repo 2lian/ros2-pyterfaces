@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from ros2_pyterfaces import DISTRO, Distro
 from ros2_pyterfaces.core import (
     CoreSchema,
     from_ros,
@@ -30,11 +31,16 @@ _RESOLVED_BY_TYPENAME = {
     get_type_name(schema): _try_resolve_ros_type(schema)
     for schema in [*SERVICE_SCHEMAS, *SERVICE_MESSAGE_SCHEMAS]
 }
+NOT_IN_HUMBLE_SERVICE_SCHEMA_TYPENAMES = (
+    {get_type_name(schema) for schema in SERVICE_SCHEMAS}
+    if DISTRO == Distro.HUMBLE
+    else set()
+)
 IGNORED_SERVICE_SCHEMA_TYPENAMES = {
     get_type_name(schema)
     for schema in SERVICE_SCHEMAS
     if _RESOLVED_BY_TYPENAME[get_type_name(schema)] is None
-}
+} | NOT_IN_HUMBLE_SERVICE_SCHEMA_TYPENAMES
 SERVICE_SCHEMA_PARAMS = [
     pytest.param(
         schema,

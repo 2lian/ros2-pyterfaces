@@ -6,6 +6,7 @@ import msgspec
 import numpy as np
 from cydr import types
 
+from ... import DISTRO, Distro
 from ..builtin_interfaces.msg import Time
 from ..geometry_msgs.msg import Point32, Quaternion, Transform, Twist, Vector3, Wrench
 from ..idl import IdlStruct
@@ -213,6 +214,19 @@ class Range(IdlStruct):
     max_range: types.float32 = np.float32(0.0)
     range: types.float32 = np.float32(0.0)
     variance: types.float32 = np.float32(0.0)
+
+
+if DISTRO == Distro.HUMBLE:
+    class RangeHumble(IdlStruct):
+        __idl_typename__ = "sensor_msgs/msg/Range"
+        header: Header = msgspec.field(default_factory=Header)
+        radiation_type: types.uint8 = np.uint8(0)
+        field_of_view: types.float32 = np.float32(0.0)
+        min_range: types.float32 = np.float32(0.0)
+        max_range: types.float32 = np.float32(0.0)
+        range: types.float32 = np.float32(0.0)
+
+    Range = RangeHumble  # type: ignore
 
 
 class RegionOfInterest(IdlStruct):
