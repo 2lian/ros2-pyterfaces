@@ -1,0 +1,394 @@
+from __future__ import annotations
+
+from typing import Any
+
+import msgspec
+import numpy as np
+from cydr import types
+
+from .. import idl
+from ..idl import IdlStruct
+from ..service_msgs.msg import ServiceEventInfo
+from .msg import (
+    ListParametersResult,
+    LoggerLevel,
+    Parameter,
+    ParameterDescriptor,
+    ParameterValue,
+    SetLoggerLevelsResult,
+    SetParametersResult,
+)
+
+
+class DescribeParameters_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/DescribeParameters_Request"
+    names: types.NDArray[Any, types.Bytes] = msgspec.field(
+        default_factory=lambda: np.empty(0, dtype=np.bytes_)
+    )
+
+
+class DescribeParameters_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/DescribeParameters_Response"
+    __unsupported_reason__ = (
+        "descriptors is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class DescribeParameters(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/DescribeParameters"
+    __unsupported_reason__ = (
+        "response_message references unsupported message DescribeParameters_Response"
+    )
+    request_message: DescribeParameters_Request = msgspec.field(
+        default_factory=DescribeParameters_Request
+    )
+    response_message: DescribeParameters_Response = msgspec.field(
+        default_factory=DescribeParameters_Response
+    )
+    event_message: DescribeParameters_Event = msgspec.field(
+        default_factory=lambda: DescribeParameters_Event()
+    )
+
+
+class DescribeParameters_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/DescribeParameters_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class GetLoggerLevels_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels_Request"
+    names: types.NDArray[Any, types.Bytes] = msgspec.field(
+        default_factory=lambda: np.empty(0, dtype=np.bytes_)
+    )
+
+
+class GetLoggerLevels_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels_Response"
+    __unsupported_reason__ = (
+        "levels is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class GetLoggerLevels(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels"
+    __unsupported_reason__ = (
+        "response_message references unsupported message GetLoggerLevels_Response"
+    )
+    request_message: GetLoggerLevels_Request = msgspec.field(
+        default_factory=GetLoggerLevels_Request
+    )
+    response_message: GetLoggerLevels_Response = msgspec.field(
+        default_factory=GetLoggerLevels_Response
+    )
+    event_message: GetLoggerLevels_Event = msgspec.field(
+        default_factory=lambda: GetLoggerLevels_Event()
+    )
+
+
+class GetLoggerLevels_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetLoggerLevels_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class GetParameters_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameters_Request"
+    names: types.NDArray[Any, types.Bytes] = msgspec.field(
+        default_factory=lambda: np.empty(0, dtype=np.bytes_)
+    )
+
+
+class GetParameters_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameters_Response"
+    __unsupported_reason__ = (
+        "values is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class GetParameters(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameters"
+    __unsupported_reason__ = (
+        "response_message references unsupported message GetParameters_Response"
+    )
+    request_message: GetParameters_Request = msgspec.field(
+        default_factory=GetParameters_Request
+    )
+    response_message: GetParameters_Response = msgspec.field(
+        default_factory=GetParameters_Response
+    )
+    event_message: GetParameters_Event = msgspec.field(
+        default_factory=lambda: GetParameters_Event()
+    )
+
+
+class GetParameters_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameters_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class GetParameterTypes_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes_Request"
+    names: types.NDArray[Any, types.Bytes] = msgspec.field(
+        default_factory=lambda: np.empty(0, dtype=np.bytes_)
+    )
+
+
+class GetParameterTypes_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes_Response"
+    types: types.NDArray[Any, types.UInt8] = msgspec.field(
+        default_factory=lambda: np.empty(0, dtype=np.uint8)
+    )
+
+
+class GetParameterTypes(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes"
+    __unsupported_reason__ = (
+        "event_message references unsupported message GetParameterTypes_Event"
+    )
+    request_message: GetParameterTypes_Request = msgspec.field(
+        default_factory=GetParameterTypes_Request
+    )
+    response_message: GetParameterTypes_Response = msgspec.field(
+        default_factory=GetParameterTypes_Response
+    )
+    event_message: GetParameterTypes_Event = msgspec.field(
+        default_factory=lambda: GetParameterTypes_Event()
+    )
+
+
+class GetParameterTypes_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/GetParameterTypes_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class ListParameters_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/ListParameters_Request"
+    prefixes: types.NDArray[Any, types.Bytes] = msgspec.field(
+        default_factory=lambda: np.empty(0, dtype=np.bytes_)
+    )
+    depth: types.uint64 = np.uint64(0)
+
+
+class ListParameters_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/ListParameters_Response"
+    result: ListParametersResult = msgspec.field(default_factory=ListParametersResult)
+
+
+class ListParameters(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/ListParameters"
+    __unsupported_reason__ = (
+        "event_message references unsupported message ListParameters_Event"
+    )
+    request_message: ListParameters_Request = msgspec.field(
+        default_factory=ListParameters_Request
+    )
+    response_message: ListParameters_Response = msgspec.field(
+        default_factory=ListParameters_Response
+    )
+    event_message: ListParameters_Event = msgspec.field(
+        default_factory=lambda: ListParameters_Event()
+    )
+
+
+class ListParameters_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/ListParameters_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetLoggerLevels_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels_Request"
+    __unsupported_reason__ = (
+        "levels is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetLoggerLevels_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels_Response"
+    __unsupported_reason__ = (
+        "results is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetLoggerLevels(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels"
+    __unsupported_reason__ = (
+        "request_message references unsupported message SetLoggerLevels_Request"
+    )
+    request_message: SetLoggerLevels_Request = msgspec.field(
+        default_factory=SetLoggerLevels_Request
+    )
+    response_message: SetLoggerLevels_Response = msgspec.field(
+        default_factory=SetLoggerLevels_Response
+    )
+    event_message: SetLoggerLevels_Event = msgspec.field(
+        default_factory=lambda: SetLoggerLevels_Event()
+    )
+
+
+class SetLoggerLevels_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetLoggerLevels_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetParametersAtomically_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically_Request"
+    __unsupported_reason__ = (
+        "parameters is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetParametersAtomically_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically_Response"
+    result: SetParametersResult = msgspec.field(default_factory=SetParametersResult)
+
+
+class SetParametersAtomically(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically"
+    __unsupported_reason__ = (
+        "request_message references unsupported message SetParametersAtomically_Request"
+    )
+    request_message: SetParametersAtomically_Request = msgspec.field(
+        default_factory=SetParametersAtomically_Request
+    )
+    response_message: SetParametersAtomically_Response = msgspec.field(
+        default_factory=SetParametersAtomically_Response
+    )
+    event_message: SetParametersAtomically_Event = msgspec.field(
+        default_factory=lambda: SetParametersAtomically_Event()
+    )
+
+
+class SetParametersAtomically_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParametersAtomically_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetParameters_Request(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParameters_Request"
+    __unsupported_reason__ = (
+        "parameters is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetParameters_Response(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParameters_Response"
+    __unsupported_reason__ = (
+        "results is a collection of messages, which cydr does not support"
+    )
+    pass
+
+
+class SetParameters(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParameters"
+    __unsupported_reason__ = (
+        "request_message references unsupported message SetParameters_Request"
+    )
+    request_message: SetParameters_Request = msgspec.field(
+        default_factory=SetParameters_Request
+    )
+    response_message: SetParameters_Response = msgspec.field(
+        default_factory=SetParameters_Response
+    )
+    event_message: SetParameters_Event = msgspec.field(
+        default_factory=lambda: SetParameters_Event()
+    )
+
+
+class SetParameters_Event(IdlStruct):
+    __idl_typename__ = "rcl_interfaces/srv/SetParameters_Event"
+    __unsupported_reason__ = (
+        "request is a collection of messages, which cydr does not support"
+    )
+    pass
+
+# cydr service type bindings
+DescribeParameters = idl.make_idl_service(
+    DescribeParameters_Request,
+    DescribeParameters_Response,
+    typename=DescribeParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+DescribeParameters_Event = DescribeParameters.Event
+
+GetLoggerLevels = idl.make_idl_service(
+    GetLoggerLevels_Request,
+    GetLoggerLevels_Response,
+    typename=GetLoggerLevels_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetLoggerLevels_Event = GetLoggerLevels.Event
+
+GetParameterTypes = idl.make_idl_service(
+    GetParameterTypes_Request,
+    GetParameterTypes_Response,
+    typename=GetParameterTypes_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetParameterTypes_Event = GetParameterTypes.Event
+
+GetParameters = idl.make_idl_service(
+    GetParameters_Request,
+    GetParameters_Response,
+    typename=GetParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+GetParameters_Event = GetParameters.Event
+
+ListParameters = idl.make_idl_service(
+    ListParameters_Request,
+    ListParameters_Response,
+    typename=ListParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+ListParameters_Event = ListParameters.Event
+
+SetLoggerLevels = idl.make_idl_service(
+    SetLoggerLevels_Request,
+    SetLoggerLevels_Response,
+    typename=SetLoggerLevels_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetLoggerLevels_Event = SetLoggerLevels.Event
+
+SetParameters = idl.make_idl_service(
+    SetParameters_Request,
+    SetParameters_Response,
+    typename=SetParameters_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetParameters_Event = SetParameters.Event
+
+SetParametersAtomically = idl.make_idl_service(
+    SetParametersAtomically_Request,
+    SetParametersAtomically_Response,
+    typename=SetParametersAtomically_Request.get_type_name().removesuffix("_Request"),
+    _module_name=__name__,
+)
+SetParametersAtomically_Event = SetParametersAtomically.Event
