@@ -2663,8 +2663,8 @@ packages:
   requires_python: '>=3.10,<3.14'
 - pypi: ../cydr
   name: cydr
-  version: 0.1.4
-  sha256: 87a306197a12950191e9ea4d98c3cddc65d3ba79968c1c8a1cc18a3f6f266311
+  version: 0.1.5
+  sha256: f7f885795f3b9907ba46a7d2d9c687065c1bffd510ede3973309510aa4b049bd
   requires_dist:
   - cython>=3.0,<4
   - msgspec>=0.20.0,<1
@@ -2947,6 +2947,7 @@ packages:
   constrains:
   - importlib-resources >=7.1.0,<7.1.1.0a0
   license: Apache-2.0
+  license_family: APACHE
   purls:
   - pkg:pypi/importlib-resources?source=compressed-mapping
   size: 34809
@@ -4153,6 +4154,7 @@ packages:
   - python >=3.8
   - python
   license: Apache-2.0
+  license_family: APACHE
   purls:
   - pkg:pypi/packaging?source=compressed-mapping
   size: 89360
